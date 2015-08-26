@@ -15,7 +15,7 @@ In addition classical laptop or desktop computers, it is also well usable from m
  
 ## Run in demo mode (with default config and without e-mail notification)
 
-For a quick demo of BioTraq switch to the directory where you downloaded the BioTraq jar file and the exemplary ```keystore.jks```. 
+For a quick demo of BioTraq switch to the directory where you downloaded the [BioTraq jar file](https://github.com/sysbio-bioinf/BioTraq/releases/download/v1.3.1/biotraq-1.3.1.jar) and the exemplary [keystore.jks](keystore.jks?raw=true). 
 
 ```
 $ cd biotraq
