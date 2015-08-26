@@ -1,0 +1,41 @@
+{% extends "templates/base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 col-md-offset-3">
+        <h2>Reset password</h2>
+        {% if request.params.reset_requested %}
+        {% if request.params.reset_missingdata %}
+        <div class="alert alert-danger">For a password reset you must specify both your user name and the registered e-mail address!</div>
+        {% else %}
+        <div class="alert alert-info">An e-mail with a password reset link will be sent to <font style="font-family:monospace">{{request.params.email}}</font> provided that this is your registered e-mail address.</div>
+        {% endif %}
+        {% endif %}        
+        <form role="form" action="{{serverRoot}}/resetrequest" method="POST">
+        	<div class="form-group">
+        	For a password reset please provide your BioTraq username and the registered e-mail address. <br>
+        	We will send you an e-mail with a link to a password reset page.
+        	</div>
+            <div class="form-group">
+                <label for="resetUsername">Username</label>
+                <input type="text" class="form-control" id="resetUsername"  name="username" placeholder="User name">
+            </div>
+            <div class="form-group">
+                <label for="resetEmail">Registered e-mail address</label>
+                <input type="text" class="form-control" id="resetEmail"  name="email" placeholder="E-mail address">
+            </div>
+            <button type="submit" class="btn btn-danger">Request password reset</button>
+        </form>
+    </div>
+</div>
+<script>
+<!--
+var serverRoot = '{{serverRoot}}';
+-->
+</script>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="{{serverRoot}}/libs/jquery/jquery.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="{{serverRoot}}/libs/bootstrap/js/bootstrap.min.js"></script>
+<script src="{{serverRoot}}/js/resetrequest.js"></script>
+{% endblock %}

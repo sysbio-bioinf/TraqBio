@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if pageTitle %}BioTraq - {{pageTitle}}{% else %}BioTraq{% endif %}</title>
+    {% block header-scripts %}
+    {% endblock %}
+
+    <!-- Bootstrap -->
+    <link href="{{serverRoot}}/libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{serverRoot}}/libs/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet">
+    <link href="{{serverRoot}}/css/main.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="{{serverRoot}}/libs/html5shiv/html5shiv.min.js"></script>
+    <script src="{{serverRoot}}/libs/respond.js/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div class="container-fluid box-wrapper">
+   {% if develop %}
+    <div class="row">    	
+    	<div class="col-md-12">
+    		<span class="label label-success" style="font-size:20px;">Development Instance</span>
+    	</div>
+    </div>    
+    {% endif %}
+    {% if pageTitle %}
+    <div class="page-header">
+    	<h1>BioTraq - {{pageTitle}}
+    	{% if pageTitleLink %}
+    	<small><a href="{{pageTitleLink}}">webpage</small></a>
+    	{% endif %}
+    	</h1>
+    	{% if request.isAdmin %}
+		<h5 class="text-success"><span class="glyphicon glyphicon-star"></span> BioTraq {{version}}</h5>
+		{% endif %} 
+    </div>
+    {% endif %}
+    <div id="nav-row" class="row">
+        <div  class="col-md-12">
+            <ul class="nav nav-pills">
+                <li {% block nav-home %}{% endblock %}><a href="{{serverRoot}}/{% if request.isAuthenticated %}timeline{% endif %}">{% if request.isAuthenticated %}Timeline{% else %}BioTraq{% endif %}</a></li>
+                {% if request.isAuthenticated %}
+	                <li {% block nav-prj-edit %}{% endblock %}><a href="{{serverRoot}}/prj/edit">Edit & Process</a></li>
+	                <li {% block nav-prj-view %}{% endblock %}><a href="{{serverRoot}}/prj/view">View finished</a></li>
+	                <li {% block nav-prj-create %}{% endblock %}><a href="{{serverRoot}}/prj/create">Create Project</a></li>
+	                <li {% block nav-templates  %}{% endblock %}><a href="{{serverRoot}}/template/list">Templates</a></li>
+	                <li {% block nav-template-create %}{% endblock %}><a href="{{serverRoot}}/template/create">Create Template</a></li>
+	                {% if request.isAdmin %}
+	                <li {% block nav-usr %}{% endblock %}><a href="{{serverRoot}}/usr">User Management</a></li>
+	                {% endif %}
+	                <li><a href="{{serverRoot}}/logout">Logout ({{request.userLogin}})</a></li>                
+	                {% if request.isAdmin %}
+		                {% if adminShutdown %} <li><button id="shutdown-btn" type="button" class="btn btn-danger">Shutdown</button></li>{% endif %}
+	                {% endif %}
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+{% if request.isAdmin %}
+    <div class="modal fade" id="shutdownDialog" tabindex="-1" role="dialog" aria-labelledby="shutdownDialogLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="shutdownDialogLabel">Are you sure?</h4>
+                </div>
+                <div class="modal-body">
+                    Do you really want to shutdown the system?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Do nothing</button>
+                    <button type="button" class="btn btn-primary">Shut down</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% block content %}
+{% endblock %}
+</div>
+<script>
+<!--
+var serverRoot = '{{serverRoot}}';
+-->
+</script>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="{{serverRoot}}/libs/jquery/jquery.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="{{serverRoot}}/libs/bootstrap/js/bootstrap.min.js"></script>
+{% if request.isAdmin %}<script src="{{serverRoot}}/js/shutdown.js"></script>{% endif %}
+{% block footer-scripts %}
+{% endblock %}
+</body>
+</html>

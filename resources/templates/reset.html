@@ -1,0 +1,47 @@
+{% extends "templates/base.html" %}
+
+{% block content %}
+{% if not request.isAuthenticated %}
+<div class="row">
+    <div class="col-md-6 col-md-offset-3">
+        <h2>Password Reset</h2>
+        
+        {% if reset.success %}
+	        <div class="alert alert-success">Password changed successfully.</div>
+        {% else %}
+            {% if reset.completed %}        		
+       			<div class="alert alert-danger">
+       			{% if reset.error %}
+	       		{{reset.error}}
+	       		{% else %}
+	       		An unexpected error occured! Please contact the website administrator.
+	       		{% endif %}
+				</div>
+        	{% endif %}
+	                
+	        <form role="form" action="{{serverRoot}}/reset/{{reset.requestid}}" method="POST">
+	            <div class="form-group">
+	                <label for="resetUsername">Username</label>
+	                <input type="text" class="form-control" id="resetUsername"  name="username" placeholder="User name" value="{{reset.username}}" disabled>
+	            </div>
+	            <div class="form-group">
+	                <label for="resetPassword">Password</label>
+	                <input type="password" class="form-control" id="resetPassword" name="password" placeholder="Password">
+	            </div>
+	            <button type="submit" class="btn btn-danger">Reset Password</button>
+	        </form>
+        {% endif %}
+    </div>
+</div>
+<script>
+<!--
+var serverRoot = '{{serverRoot}}';
+-->
+</script>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="{{serverRoot}}/libs/jquery/jquery.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="{{serverRoot}}/libs/bootstrap/js/bootstrap.min.js"></script>
+<script src="{{serverRoot}}/js/reset.js"></script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "templates/base.html" %}
+
+{% block header-scripts %}
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/datatables/css/jquery.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/datatables-responsive/css/responsive.bootstrap.min.css">
+{% endblock %}
+
+{% block nav-templates %}class="active"{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">Browse project templates.</h2>
+            </div>
+            <div class="panel-body templates-table">
+                <table id="templates-table" class="table table-hover dt-responsive mytables" width="100%">
+                    <thead>
+                    <tr>
+                        <th class="all">Template Name</th>                        
+                        <th class="min-tablet col-md-3">Description</th>
+                        <th class="all">Edit</th>
+                        <th class="all">Delete</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for templ in templates %}
+                    <tr>
+                        <td>{{templ.name}}</td>                        
+                        <td>{{templ.description|linebreaks|safe}}</td>
+                        <td>
+                            <a class="btn btn-default btn-sm" href="{{serverRoot}}/template/edit/{{templ.id}}">
+                                <span class="glyphicon glyphicon-pencil"></span>
+                            </a>
+                        </td>
+                        <td>
+                            <button class="btn btn-default btn-sm btn-delete-template" type="button" data-id="{{templ.id}}" data-type="DELETE">
+                                <span class="glyphicon glyphicon-trash"></span>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="deleteDialog" tabindex="-1" role="dialog" aria-labelledby="deleteDialogLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="deleteDialogLabel">Are you sure?</h4>
+            </div>
+            <div class="modal-body">
+                Do you really want to delete this template?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Do nothing</button>
+                <button type="button" class="btn btn-primary">Delete template</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer-scripts %}
+<script>
+<!--
+var serverRoot = '{{serverRoot}}';
+-->
+</script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables-bootstrap/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables/js/date-de.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/js/templateList.js"></script>
+{% endblock %}

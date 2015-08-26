@@ -1,0 +1,323 @@
+{% extends "templates/base.html" %}
+
+{% block header-scripts %}
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/toggle-switch/toggle-switch.css">
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/datatables/css/jquery.dataTables.min.css">
+{% endblock %}
+
+
+{% block nav-prj-create %}class="active"{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">Select project template</h2>
+            </div>
+            <div class="panel-body">
+                <form class="form-horizontal" role="form">
+                    <select id="selectTemplate" class="form-control">
+                        <option value="-1">Create empty project</option>
+                        {% for template in templates %}
+                        <option value="{{template.id}}">{{template.name}}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">Customize project</h2>
+            </div>
+            <div class="panel-body">
+                <form id="generalDescription" class="form-horizontal" role="form" data-toggle="validator">
+                    <div class="form-group">
+                        <label for="customerTable" class="col-sm-2 control-label">Customers</label>
+                        <div class="col-sm-10">
+                    		<div class="panel panel-default customerTablePanel" id="customerTable">           
+	                    	<div class="panel-body">
+	    						<table id="customer-notification-table" class="table table-hover customerTable">
+				                    <thead>
+				                        <tr>
+				                            <th>Name</th>
+				                            <th>E-Mail</th>
+				                            <th>Delete</th>
+				                        </tr>
+				                    </thead>
+				                    <tbody>
+				                    </tbody>
+				                </table>
+				                <button id="addCustomerRow" type="button" class="btn btn-info">
+                    				<span class="glyphicon glyphicon-plus"></span> Add customer
+                				</button>
+                				<button type="button" class="btn btn-info btn-select-customer-row" data-toggle="modal" data-target=".select-customer">
+                    				<span class="glyphicon glyphicon-search"></span> Select customer
+                				</button>
+                				<div class="help-block with-errors"></div>
+	    					</div>
+	    					</div>
+	    				</div>                        
+                    </div>
+                    <div class="form-group">
+                        <label for="projectAdvisor" class="col-sm-2 control-label">Project advisor</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control customize" id="projectAdvisor" data-name="advisor" placeholder="Project advisor">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="flowcellNr" class="col-sm-2 control-label">Flowcell number</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control customize" id="flowcellNr" data-name="flowcellnr" placeholder="Flowcell number">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectnumber" class="col-sm-2 control-label">Project number</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control customize" id="projectnumber" data-name="projectnumber" placeholder="Project number">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectDescription" class="col-sm-2 control-label">Description</label>
+                        <div class="col-sm-10">
+                            <textarea class="form-control customize" id="projectDescription" data-name="description" placeholder="Description"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="orderForm" class="col-sm-2 control-label">Order Form</label>
+                        <div class="col-sm-10">
+                            <input type="file" class="input-file customize" name="orderform" data-name="orderform" id="orderForm">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="sampleSheet" class="col-sm-2 control-label">Sample Sheet</label>
+                        <div class="col-sm-10">
+                            <input type="file" class="input-file customize" name="samplesheet" data-name="samplesheet" id="sampleSheet">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                    	<label for="notifycustomer" class="col-sm-2 control-label">Customer Notification</label>
+                    	<div class="col-sm-10">
+                    		<label class="checkbox checkbox-inline">
+                   				<input type="checkbox" class="customize" name="notifycustomer" data-name="notifycustomer" id="notifyCustomer"> notify on project step completion?
+                   		 	</label>
+                    	</div>
+                    </div>
+                    <div class="form-group">
+                    	<label for="notifiedusers" class="col-sm-2 control-label">Staff Notification</label>
+                    	<div class="col-sm-10 container-fluid">
+                    		<div class="panel panel-default">           
+	                    	<div class="panel-body">
+	    						<div class="row">
+	                				{% for user in userlist %}
+	                				<div class="col-sm-2 col-md-2 col-lg-1">
+                    				<label class="checkbox checkbox-inline">
+                    					<input type="checkbox" class="customize" name="{{user}}" data-name="usernotification" data-username="{{user}}">{{user}}                    					
+                    				</label>
+                    				</div>
+                    				{% endfor %}
+	    						</div>
+							</div>
+							</div>            
+                    	</div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">Customize project steps</h2>
+            </div>
+            <div class="panel-body" class="form-group">
+                <table id="step-table" class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th
+                                data-toggle="tooltip"
+                                data-placement="right"
+                                title="Type of the project step. For Example sequencing or calculation.">Type</th>
+                            <th
+                                data-toggle="tooltip"
+                                data-placement="top"
+                                title="Detailed description of the project step.">Description</th>
+                            <th
+                                data-toggle="tooltip"
+                                data-placement="top"
+                                title="Person who does the job in the lab.">Step advisor</th>
+                            <th
+                                data-toggle="tooltip"
+                                data-placement="top"
+                                title="Additional comments.">Free Text</th>
+                            <th>Move</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-default btn-add-row">
+                    <span class="glyphicon glyphicon-plus"></span> Add project step
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">Start project</h2>
+            </div>
+            <div class="panel-body">
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label for="template-toggle" class="col-sm-2 control-label">Save current project configuration as new template</label>
+                        <div class="col-sm-3">
+                            <div id="template-toggle" class="switch-toggle well">
+                                <input class="newTemplateToggle" id="save" name="view" type="radio">
+                                <label for="save">Save</label>
+
+                                <input class="newTemplateToggle" id="notSave" name="view" type="radio" checked>
+                                <label for="notSave">Don't save</label>
+                                
+                                <a class="btn btn-primary"></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: none"
+                         id="newTemplateWrapper"
+                         class="form-group hover-popover"
+                         data-toggle="popover"
+                         data-placement="top"
+                         title="Save new template"
+                         data-content="Enter a name here to save this project configuration as new template. If you leave this field blank nothing will happen.">
+                        <label for="newTemplate" class="col-sm-2 control-label">New template name</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="newTemplate" placeholder="Name">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="col-sm-6 col-sm-offset-2">
+                            <button id="startProject" type="button" class="btn btn-success">Start Project</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script id="template_row" type="x-tmpl-mustache">
+<tr>
+    <td><input type="text" class="form-control" data-id="<% id %>" data-name="type" value="<% type %>"></td>
+	<td><textarea rows="1" type="text" class="form-control" data-id="<% id %>" data-name="description"><% description %></textarea></td>
+    <td><input type="text" class="form-control" data-id="<% id %>" data-name="advisor" value="<% advisor %>"></td>
+    <td><textarea rows="1" type="text" class="form-control" data-id="<% id %>" data-name="freetext"><% freetext %></textarea></td>
+    <td>
+        <button class="btn btn-default btn-row-up" type="button" data-sequence="<% sequence %>">
+            <span class="glyphicon glyphicon-chevron-up"></span>
+        </button>
+        <button class="btn btn-default btn-row-down" type="button" data-sequence="<% sequence %>">
+            <span class="glyphicon glyphicon-chevron-down"></span>
+        </button>
+    </td>
+    <td>
+        <button class="btn btn-default btn-delete-row" type="button" data-id="<% id %>">
+            <span class="glyphicon glyphicon-trash"></span>
+        </button>
+    </td>
+
+</tr>
+</script>
+<script id="customer_template_row" type="x-tmpl-mustache">
+<tr>
+    <td class="form-group"><input type="text" class="form-control customer-data" data-index="<% index %>" data-name="name" value="<% name %>" required placeholder="Name" required data-error="Please insert the customer's name"><div class="help-block with-errors"></div></td>
+	<td class="form-group"><input type="email" class="form-control customer-data" data-index="<% index %>" data-name="email" value="<% email %>" required placeholder="E-Mail" required data-error="Please insert a valid e-mail address"><div class="help-block with-errors"></div></td>
+    <td>
+        <button class="btn btn-default btn-delete-customer-row" type="button" data-index="<% index %>">
+            <span class="glyphicon glyphicon-trash"></span>
+        </button>
+    </td>
+
+</tr>
+</script>
+<script id="success-message" type="x-tmpl-mustache">
+<p>Created project with tracking number: <a href="<% trackingLink %>"><% trackingNr %></a>.</p>
+<%#customerinfos %>
+<p>A notification e-mail will be sent to the customers:<br> <%&customerinfos %></p>
+<%/customerinfos %>
+</script>
+<div class="modal fade after-creation" tabindex="-1" role="dialog" aria-labelledby="modalSuccessLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="modalSuccessLabel">Project creation</h4>
+            </div>
+            <div class="modal-body">
+                <div id="after-creation-content">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade select-customer" tabindex="-1" role="dialog" aria-labelledby="modal-customers-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="modal-customers-label">Select customer</h4>
+            </div>
+            <div class="modal-body">
+                <div id="customers-content">
+                    <table id="customer-table" class="table hover">
+                        <thead>
+                        <tr>
+                        	<th>Customer name</th>
+                            <th>E-Mail</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <td>{{ customer.name }}</td>
+                            <td>{{ customer.email }}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button id="btn-select" type="button" class="btn btn-primary">Select</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer-scripts %}
+<script>
+<!--
+var serverRoot = '{{serverRoot}}';
+-->
+</script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/bootstrap/js/validator.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables-bootstrap/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/jquery.serialize-object.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/mustache.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/js/createProject.js"></script>
+{% endblock %}

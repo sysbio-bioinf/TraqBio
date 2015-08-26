@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if pageTitle %}BioTraq - {{pageTitle}}{% else %}BioTraq{% endif %}</title>
+    {% block header-scripts %}
+    {% endblock %}
+
+    <!-- Bootstrap -->
+    <link href="{{serverRoot}}/libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{serverRoot}}/css/main.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="{{serverRoot}}/libs/html5shiv/html5shiv.min.js"></script>
+    <script src="{{serverRoot}}/libs/respond.js/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div class="container-fluid box-wrapper tracking">
+	{% if develop %}
+    <div class="row">    	
+    	<div class="col-md-12">
+    		<span class="label label-success" style="font-size:20px;">Development Instance</span>
+    	</div>
+    </div>    
+    {% endif %}
+    {% if pageTitle %}
+    <div class="page-header">
+    	<h1>BioTraq - {{pageTitle}}
+    	{% if pageTitleLink %}
+    	<small><a href="{{pageTitleLink}}">webpage</small></a>
+    	{% endif %}
+    	</h1>
+    </div>
+    {% endif %}
+    {% if request.isAuthenticated %}
+    <div id="nav-row" class="row">
+        <div  class="col-md-8">
+            <ul class="nav nav-pills">
+                <li><a href="{{serverRoot}}/">BioTraq</a></li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+    {% if project.id %}
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Project {{project.projectnumber}} summary</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="well">
+                        {{ project.description|linebreaks|safe }}
+                    </div>
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-3"><strong>From</strong></div>
+                            <div class="col-md-6">{{project.dateofreceipt}}</div>
+                        </div>
+                        {% if project.flowcellnr %}
+                        <div class="row">
+                            <div class="col-md-3"><strong>Flowcell Nr.</strong></div>
+                            <div class="col-md-6">{{project.flowcellnr}}</div>
+                        </div>
+                        {% endif %}
+                        {% if project.advisor %}
+                        <div class="row">
+                            <div class="col-md-3"><strong>Person in charge</strong></div>
+                            <div class="col-md-6">{{project.advisor}}</div>
+                        </div>
+                        {% endif %}
+                        {% if project.orderform %}
+                        <div class="row">
+                            <div class="col-md-3"><strong>Order form</strong></div>
+                            <div class="col-md-6">
+                            	{% if request.isAuthenticated %}
+                            	<a href="{{serverRoot}}/doc/{{project.trackingnr}}/{{project.orderform}}">{{project.orderform}}</a>
+                            	{% else %}
+                            	{{project.orderform}}
+								{% endif %}
+                           	</div>
+                        </div>
+                        {% endif %}
+                        {% if project.samplesheet %}
+                        <div class="row">
+                            <div class="col-md-3"><strong>Sample sheet</strong></div>
+                            <div class="col-md-6">
+                            	{% if request.isAuthenticated %}
+                            	<a href="{{serverRoot}}/doc/{{project.trackingnr}}/{{project.samplesheet}}">{{project.samplesheet}}</a>
+                            	{% else %}
+                            	{{project.samplesheet}}
+								{% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Project Progress</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="progress progress-striped active">
+                        <div class="progress-bar"  role="progressbar" style="width: {{project.processed}}%">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Project steps</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="panel-group" id="stepsAccordion">
+                    {% for step in project.projectsteps %}
+                        <div class="panel panel-default {% if step.isCurrent %}panel-info{% else %}{% if step.state = 1 %}panel-success{% endif %}{% endif %}">
+                            <div class="panel-heading" data-toggle="collapse" data-target="#step_{{step.id}}" data-parent="#stepsAccordion">
+                                <h4 class="panel-title">
+                                    <a data-toggle="collapse" data-parent="#stepsAccordion" href="#step_{{step.id}}">
+                                        {% if step.state = 1 %}<span class="glyphicon glyphicon-ok"></span> {% endif %} {{step.type}}
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="step_{{step.id}}" class="panel-collapse collapse {% if step.isCurrent %}in{% endif %}">
+                                <div class="panel-body steps">
+                                    <div class="container-fluid">
+                                        {% if step.description %}
+                                        <div class="row">
+                                            <div class="col-md-3"><strong>Description</strong></div>
+                                            <div class="col-md-6">{{step.description|linebreaks|safe}}</div>
+                                        </div>
+                                        {% endif %}
+                                        {% if step.freetext %}
+                                        <div class="row">
+                                            <div class="col-md-3"><strong>Free text</strong></div>
+                                            <div class="col-md-6">{{ step.freetext|linebreaks|safe }}</div>
+                                        </div>
+                                        {% endif %}
+                                        {% if step.advisor %}
+                                        <div class="row">
+                                            <div class="col-md-3"><strong>Step advisor</strong></div>
+                                            <div class="col-md-6">{{step.advisor}}</div>
+                                        </div>
+                                        {% endif %}
+                                        {% if step.timestamp %}
+                                        <div class="row">
+                                            <div class="col-md-3"><strong>Done at</strong></div>
+                                            <div class="col-md-6">{{step.timestamp}}</div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="jumbotron">
+            <h3>Invalid tracking number: {{trackingnr}}</h3>
+            <p>Please check your tracking number.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+<script>
+<!--
+var serverRoot = '{{serverRoot}}';
+-->
+</script>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="{{serverRoot}}/libs/jquery/jquery.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="{{serverRoot}}/libs/bootstrap/js/bootstrap.min.js"></script>
+
+</body>
+</html>

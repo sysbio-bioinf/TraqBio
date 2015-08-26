@@ -1,0 +1,128 @@
+{% extends "templates/base.html" %}
+
+{% block header-scripts %}
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/toggle-switch/toggle-switch.css">
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/datatables/css/jquery.dataTables.min.css">
+{% endblock %}
+
+
+{% block nav-templates %}class="active"{% endblock %}
+
+{% block content %}
+<div style="display: none">
+    <div class="template-init" data-name="id">{{template.id}}</div>    
+    <div class="template-init" data-name="name">{{template.name}}</div>
+    <div class="template-init" data-name="description">{{template.description}}</div>
+    {% for step in template.templatesteps %}
+    <div class="template-steps-init" data-id="{{ step.id }}">
+        <div data-name="type">{{ step.type }}</div>
+        <div data-name="description">{{ step.description }}</div>
+        <div data-name="sequence">{{ step.sequence }}</div>
+    </div>
+    {% endfor %}
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">Customize template</h2>
+            </div>
+            <div class="panel-body">
+                <form id="templateData" class="form-horizontal" role="form" data-toggle="validator">
+                    <div class="form-group">
+                        <label for="templateName" class="col-sm-2 control-label">Template Name</label>
+                        <div class="col-sm-10">
+                            <input type="text"
+                                   class="form-control customize"
+                                   id="templateName"
+                                   data-name="name"
+                                   placeholder="Name"
+                                   value="{{template.name}}"
+                                   required data-error="Please insert template name">
+                            <div class="help-block with-errors"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="templateDescription" class="col-sm-2 control-label">Description</label>
+                        <div class="col-sm-10">
+                            <textarea class="form-control customize" id="templateDescription" data-name="description" placeholder="Description">{{template.description}}</textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">Customize template steps</h2>
+            </div>
+            <div class="panel-body">
+                <table id="step-table" class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th
+                                data-toggle="tooltip"
+                                data-placement="right"
+                                title="Type of the template step. For Example sequencing or calculation.">Type</th>
+                            <th
+                                data-toggle="tooltip"
+                                data-placement="top"
+                                title="Detailed description of the template step.">Description</th>
+                            <th>Move</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-default btn-add-row">
+                    <span class="glyphicon glyphicon-plus"></span> Add template step
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+    	<div class="form-group">            
+        	<button id="updateTemplate" type="button" class="btn btn-success">Update Template</button>            
+        </div>        
+    </div>
+</div>
+<script id="template_row" type="x-tmpl-mustache">
+<tr>
+    <td><input type="text" class="form-control" data-id="<% id %>" data-name="type" value="<% type %>"></td>
+	<td><textarea rows="1" type="text" class="form-control" data-id="<% id %>" data-name="description"><% description %></textarea></td>
+    <td>
+        <button class="btn btn-default btn-row-up" type="button" data-sequence="<% sequence %>">
+            <span class="glyphicon glyphicon-chevron-up"></span>
+        </button>
+        <button class="btn btn-default btn-row-down" type="button" data-sequence="<% sequence %>">
+            <span class="glyphicon glyphicon-chevron-down"></span>
+        </button>
+    </td>
+    <td>
+        <button class="btn btn-default btn-delete-row" type="button" data-id="<% id %>">
+            <span class="glyphicon glyphicon-trash"></span>
+        </button>
+    </td>
+</tr>
+</script>
+{% endblock %}
+
+{% block footer-scripts %}
+<script>
+<!--
+var serverRoot = '{{serverRoot}}';
+-->
+</script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/bootstrap/js/validator.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables-bootstrap/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/jquery.serialize-object.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/mustache.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/js/editTemplate.js"></script>
+{% endblock %}

@@ -1,0 +1,46 @@
+[
+    {:description "Quantitative In-Solution Proteomics"
+     :name "Quantitative In-Solution Proteomics"
+     :templatesteps [
+     {:type "Job request"}
+     {:type "Sample Delivery"}
+     {:type "Sample Preparation"}
+     {:type "Proteolytic Digest"}
+     {:type "LC/MS-Analysis"}
+     {:type "Database search"}
+     {:type "Quantitative Analysis"}
+     {:type "Statistics"}
+     {:type "Data distribution"}
+     {:type "Job completed"}
+     ]
+    }
+    {:description "Quantitative In-Gel Proteomics"
+     :name "Quantitative In-Gel Proteomics"
+     :templatesteps [
+     {:type "Job request"}
+     {:type "Sample Delivery"}
+     {:type "Sample Preparation"}
+     {:type "SDS-PAGE"}
+     {:type "Band Processing"}
+     {:type "Proteolytic Digest"}
+     {:type "LC/MS-Analysis"}
+     {:type "Database search"}
+     {:type "Quantitative Analysis"}
+     {:type "Statistics"}
+     {:type "Data distribution"}
+     {:type "Job completed"}
+     ]
+    }
+    {:description "Qualitative In-Solution Proteomics"
+     :name "Qualitative In-Solution Proteomics"
+     :templatesteps [
+     {:type "Job request"}
+     {:type "Sample Delivery"}
+     {:type "Sample Preparation"}
+     {:type "Proteolytic Digest"}
+     {:type "LC/MS-Analysis"}
+     {:type "Database search"}
+     {:type "Data distribution"}
+     ]
+    }
+]
