@@ -81,7 +81,7 @@
    :advisor "Advisor"})
 
 
-(defn- describe-attribute-modicifactions
+(defn describe-attribute-modicifactions
  [[new-step, old-step, :as diff]]
  (let [step-name (some :type diff)
        renamed (when (contains? new-step :type)

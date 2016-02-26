@@ -251,33 +251,43 @@
         (persistent! result)))))
 
 
+
+(defn progress-information
+  "Determines the progress information that can be included in notification e-mails."
+  [new-project, old-project]
+  (let [completed-steps (filter2
+                          (fn [new-step, old-step]
+                            (and
+                              (== (:state new-step) 1)
+                              (== (:state old-step) 0)))
+                          (sort-by :id (:projectsteps new-project)),
+                          (sort-by :id (:projectsteps old-project))),
+        n (count completed-steps),
+        step-information (->> completed-steps
+                           (sort-by :sequence)
+                           (mapv
+                             (fn [{:keys [type, freetext]}]
+                               (format "Step: %s\n%s", type, (if (str/blank? freetext) "" (str "\n  " (str/replace freetext "\n" "\n  ")))))))]
+    (str/join "\n\n"
+      (list*
+        (format "The following %s been completed:" (if (< 1 n) (str n " steps have") "step has"))
+        (cond-> step-information
+          (== (:done new-project) 1) (conj "The project has been finished."))))))
+
+
 (defn step-completion-notification
   [new-project, old-project]
   (try
     (let [notifycustomer (== (:notifycustomer new-project) 1),
           notifiedusers (user-notification-map->vector 1 (:notifiedusers new-project))]
       (when (or notifycustomer (seq notifiedusers))
-        (let [completed-steps (filter2
-                                (fn [new-step, old-step]
-                                  (and
-                                    (== (:state new-step) 1)
-                                    (== (:state old-step) 0)))
-                                (sort-by :id (:projectsteps new-project)),
-                                (sort-by :id (:projectsteps old-project))),
-              n (count completed-steps)]
-          (mail/send-project-notification-mail
-            (assoc new-project
-              :progressinfo (if (== (:done new-project) 1)
-                              "The project is finished."
-                              (str "The following "
-                                (if (< 1 n) (str n " steps have") "step has")
-                                " been completed:\n"
-                                (str/join ", " (map :type (sort-by :sequence completed-steps)))
-                                "."))
-              :trackinglink (render-tracking-link (:trackingnr new-project))
-              :editlink (render-edit-link (:id new-project))),
-            (crud/user-email-addresses notifiedusers),
-            :project-progress))))
+        (mail/send-project-notification-mail
+          (assoc new-project
+            :progressinfo (progress-information new-project, old-project),
+            :trackinglink (render-tracking-link (:trackingnr new-project))
+            :editlink (render-edit-link (:id new-project))),
+          (crud/user-email-addresses notifiedusers),
+          :project-progress)))
     (catch Throwable t
       (log/errorf "Failed to determine step completion before sending the notification e-mails. Error:\n%s"
         (with-out-str (print-cause-trace t))))))

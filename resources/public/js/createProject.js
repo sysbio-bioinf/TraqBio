@@ -452,7 +452,7 @@
         function selectCustomer(row){
             var customer = customerSelectionTable.row(row).data();
 
-            var customerData = {email: customer[0], name: customer[1]}
+            var customerData = {email: customer[1], name: customer[0]}
             
             addCustomerRow( customerData );
             redrawCustomers();

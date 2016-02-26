@@ -62,7 +62,9 @@ Yours sincerely,
 (def ^:private ^:const project-progress-customer-body
 "Dear {{customername}},
 
-project {{projectnumber}} has been updated. {{progressinfo}}
+project {{projectnumber}} has been updated.
+
+{{progressinfo}}
 
 You can access additional information using the following link:
 {{trackinglink}}
@@ -76,6 +78,7 @@ Yours sincerely,
 "Dear {{staffname}},
 
 project {{projectnumber}} for customer {% if customername %}{{customername}} ({{customeremail}}){% else %}{{customeremail}}{% endif %} has been updated.
+
 {{progressinfo}}
 
 You can access the project for modifications via the following link:
@@ -128,7 +131,7 @@ Yours sincerely,
                                       :staff
                                       {:subject "Progress update of project {{projectnumber}}"
                                        :body project-progress-staff-body}}
-                   
+                   :cc-notified-staff? false,
                    :send-mail? false}}))
 
 

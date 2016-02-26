@@ -297,6 +297,16 @@
         WHERE projectstep.project = ?" project-id])))
 
 
+(defn step-exists
+  ([project-id, step-id]
+    (jdbc/with-db-transaction [t-conn (c/db-connection)]
+      (step-exists t-conn, project-id, step-id)))
+  ([db-conn, project-id, step-id]
+    (jdbc/query db-conn,
+      ["SELECT * FROM projectstep WHERE project = ? AND id = ?" project-id, step-id]
+      :result-set-fn first)))
+
+
 (defn read-customers
   "Get a list of all names and email adresses of the saved customers"
   ([]
@@ -348,6 +358,16 @@
     (jdbc/query t-conn,
       ["SELECT c.name, c.email, pc.sequence FROM customer AS c, projectcustomer AS pc WHERE pc.projectid = ? AND c.id = pc.customerid", project-id]
       :result-set-fn vec)))
+
+
+(defn read-project-number
+  ([project-id]
+    (jdbc/with-db-transaction [t-conn (c/db-connection)]
+      (read-project-number t-conn, project-id)))
+  ([db-conn, project-id]
+    (jdbc/query db-conn
+      ["SELECT projectnumber FROM project WHERE project.id = ?" project-id]
+      :result-set-fn #(some-> % first :projectnumber))))
 
 
 (defn read-project
@@ -403,8 +423,11 @@
 
 
 (defn update-projectstep
-  [t-conn, {:keys [id] :as step}]
-  (jdbc/update! t-conn, :projectstep, (normalize-projectstep-data step), ["id = ?", id]))
+  ([step]
+    (jdbc/with-db-transaction [t-conn (c/db-connection)]
+      (update-projectstep t-conn, step)))
+  ([t-conn, {:keys [id] :as step}]
+    (jdbc/update! t-conn, :projectstep, (normalize-projectstep-data step), ["id = ?", id])))
 
 
 (defn delete-projectstep
@@ -552,11 +575,19 @@
       (mapv #(read-project t-conn %) finished-project-ids))))
 
 
+(defn read-current-project-ids
+  ([]
+    (jdbc/with-db-transaction [t-conn (c/db-connection)]
+      (read-current-project-ids t-conn)))
+  ([t-conn]
+    (jdbc/query t-conn ["SELECT id FROM project WHERE done = 0"] :row-fn :id)))
+
+
 (defn read-current-projects
   "Read current projects."
   []
   (jdbc/with-db-transaction [t-conn (c/db-connection)]
-    (let [project-ids (jdbc/query t-conn ["SELECT id FROM project WHERE done = 0"] :row-fn :id)]
+    (let [project-ids (read-current-project-ids t-conn)]
       (mapv #(read-project t-conn %) project-ids))))
 
 

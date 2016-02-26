@@ -33,6 +33,7 @@
     [clojure.tools.logging :as log]
     [clojure.stacktrace :refer [print-cause-trace]]
     [biotraq.templates :as templates]
+    [biotraq.api :as api]
     [biotraq.db.crud :as db]
     [biotraq.actions.user :as user-action]
     [biotraq.actions.project :as project-action]
@@ -115,6 +116,22 @@
     (friend/wrap-authorize system-routes, #{::c/admin})))
 
 
+(core/defroutes script-api-routes
+  (core/context "/api" []
+    (friend/wrap-authorize
+      (core/routes
+        (core/GET "/active-project-list" []
+          (api/active-projects))
+        (core/context "/project/:project-id" [project-id]
+          (core/GET "/is-active-step" request
+            (api/is-active-step project-id, request))
+          (core/GET "/sample-sheet" []
+            (api/sample-sheet project-id))
+          (core/POST "/finish-step/:step-id" [step-id :as request]
+            (api/finish-step project-id, step-id, request))))
+      #{::c/user})))
+
+
 (defn wrap-cache-control
   [handler]
   (fn [request]
@@ -159,6 +176,7 @@
         #{::c/user}))
     (json/wrap-json-response
       (json/wrap-json-body api-routes {:keywords? true}))
+    script-api-routes
     (core/GET "/" request (ring.util.response/redirect (c/server-location "/timeline")))
     (route/not-found (templates/not-found))))
 

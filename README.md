@@ -1,6 +1,6 @@
-# BioTraq
+# iBioTraq
 
-BioTraq enables a simple and flexible tracking of core unit projects.
+iBioTraq enables a simple and flexible tracking of core unit projects.
 In addition classical laptop or desktop computers, it is also well usable from mobile devices like tablets and smartphones.
 
 * Admin and user roles for your staff
@@ -15,7 +15,7 @@ In addition classical laptop or desktop computers, it is also well usable from m
  
 ## Run in demo mode (with default config and without e-mail notification)
 
-For a quick demo of BioTraq switch to the directory where you downloaded the [BioTraq jar file](https://github.com/sysbio-bioinf/BioTraq/releases/download/v1.3.1/biotraq-1.3.1.jar) and the exemplary [keystore.jks](keystore.jks?raw=true). 
+For a quick demo of iBioTraq switch to the directory where you downloaded the [iBioTraq jar file](https://github.com/sysbio-bioinf/iBioTraq/releases/download/v1.3.1/biotraq-1.3.1.jar) and the exemplary [keystore.jks](keystore.jks?raw=true). 
 
 ```
 $ cd biotraq
@@ -23,7 +23,7 @@ $ ls
 biotraq.jar keystore.jks 
 ...
 ```
-The run BioTraq as follows to create an initial configuration file and an initial database.
+The run iBioTraq as follows to create an initial configuration file and an initial database.
 ```
 $ java -jar biotraq.jar init
 ```
@@ -33,7 +33,7 @@ $ ls
 biotraq.jar keystore.jks 
 biotraq.conf biotraq.db
 ```
-Finally, start the BioTraq web application.
+Finally, start the iBioTraq web application.
 ```
 $ java -jar biotraq run
 ```
@@ -43,13 +43,13 @@ Now go to https://localhost:8443/ and sign in with the default credentials: user
 # Detailed description
 ## Prerequisites
 
-When running BioTraq with SSL (:ssl? true), you need a Java KeyStore (*.jks) containing the SSL certificate to run BioTraq.
+When running iBioTraq with SSL (:ssl? true), you need a Java KeyStore (*.jks) containing the SSL certificate to run iBioTraq.
 You can create a KeyStore with JDK's keytool.
 http://docs.oracle.com/javase/7/docs/technotes/tools/windows/keytool.html
 
 ## Usage
 
-To initialize BioTraq run the jar with the following parameters:
+To initialize iBioTraq run the jar with the following parameters:
 
 ```
  java -jar biotraq.jar init
@@ -57,14 +57,14 @@ To initialize BioTraq run the jar with the following parameters:
                               -------     -----------  
   -a, --admin          NAME   admin       Name of the admin user  
   -p, --password       SECRET biotraq     Admins password  
-  -d, --data-base-name NAME   biotraq.db  Name of the database. BioTraq   will not override a existing database file.
+  -d, --data-base-name NAME   biotraq.db  Name of the database. iBioTraq will not override a existing database file.
   -t, --template-file  NAME               Path to file with a initial set of templates.  
 ```
 
 This will create the database with an administrator user and it will bootstrap a default config file.
 Please update the entries in the config file (details below).
 
-You can run BioTraq after the initialisation:
+You can run iBioTraq after the initialisation:
 
 ```  
  java -jar biotraq.jar run
@@ -75,7 +75,7 @@ You can run BioTraq after the initialisation:
  
 ## Config
 
-The following listing shows an example configuration for BioTraq.
+The following listing shows an example configuration for iBioTraq.
 (Actually this is the default configuration generated via ```java -jar biotraq.jar init```.)
 ```clojure
 {; mostly Jetty config (see: https://ring-clojure.github.io/ring/ring.adapter.jetty.html )  
@@ -87,7 +87,7 @@ The following listing shows an example configuration for BioTraq.
   :ssl? true,
   :key-password "password",
   :forwarded? false,
-  :server-root "",         ; prefix directory for all BioTraq URLs (routes)
+  :server-root "",         ; prefix directory for all iBioTraq URLs (routes)
   :proxy-url nil,          ; hostname of the proxying server, e.g. via Apache (see below, Apache as Proxy)
   :ssl-port 8443},
   
@@ -97,14 +97,14 @@ The following listing shows an example configuration for BioTraq.
  :log-level :info,
  :log-file "biotraq.log",
  
- :admin-shutdown? true, ; allow the BioTraq admin to shut down BioTraq from the web interface
+ :admin-shutdown? true, ; allow the iBioTraq admin to shut down iBioTraq from the web interface
  
  ; Branding
  :page-title "",      ; page title to display
  :page-title-link "", ; link to an external website to render beside the page title
  
- :upload-path "uploads/", ; Upload path for sample sheets and order forms. BioTraq needs write permission for 
-                          ; this folder. BioTraq will create subfolders for every project. 
+ :upload-path "uploads/", ; Upload path for sample sheets and order forms. iBioTraq needs write permission for 
+                          ; this folder. iBioTraq will create subfolders for every project. 
  
  ; e-mail configuration
  :mail-config
@@ -117,7 +117,7 @@ The following listing shows an example configuration for BioTraq.
    :pass "secret", ; e-mail account password
    :tls :yes,
    :port 587},  
-  :from "john.smith@uni-ulm.de", ; visible sender e-mail address in BioTraq notification e-mails
+  :from "john.smith@uni-ulm.de", ; visible sender e-mail address in iBioTraq notification e-mails
   ; e-mail templates for project creation notification
   :project-creation
   {; template for notifying the staff
@@ -150,7 +150,7 @@ You recieve this e-mail because you have registered a project at the YOUR LAB.
 You can track the progress of your samples through the various steps performed via the following link:
 {{trackinglink}}
 
-This e-mail was automatically generated by BioTraq, a sample tracking tool developed by the Research Group for Bioinformatics & Systems Biology, headed by Prof. Dr. Hans A. Kestler.
+This e-mail was automatically generated by iBioTraq, a sample tracking tool developed by the Research Group for Bioinformatics & Systems Biology, headed by Prof. Dr. Hans A. Kestler.
 
 Yours sincerely,
              YOUR NAME
@@ -193,25 +193,61 @@ An example template file is the ```proteomics.init``` in this repository which c
 java -jar biotraq.jar init -t proteomics.init
 ```
 
+## Scripting
+
+TODO: more detailed description
+
+Login in shell script:
+```
+curl -i -c cookies.txt -X POST -d 'username=john&password=secret' "https://your.biotraq.tld/login"
+```
+Perform requests in shell script:
+```
+curl -i -b cookies.txt -c cookies.txt "https://your.biotraq.tld/api/list-projects"
+```
+(Add "-k" when a self-signed certificate is used in a test/development scenario.)
+
+
+```
+curl -s -k -b cookies.txt -c cookies.txt "https://your.biotraq.tld/api/active-project-list"
+```
+
+```
+for p in $(curl -s -k -b cookies.txt -c cookies.txt "https://your.biotraq.tld/api/active-project-list"); do echo "project" $p; done
+```
+
+```
+curl -s -k -b cookies.txt -c cookies.txt "https://your.biotraq.tld/api/project/5/is-active-step" -G --data-urlencode "name=The step title"
+```
+
+```
+curl -s -k -b cookies.txt -c cookies.txt -X POST "https://your.biotraq.tld/api/project/7/finish-step/25" --data-urlencode "description=la li lu" --data-urlencode "freetext=FERTIG!" --data-urlencode "advisor=Max Mustermann"
+```
+
+```
+curl -s -k -b cookies.txt -c cookies.txt "https://your.biotraq.tld/api/project/7/sample-sheet" -f -o samplesheet.txt
+```
+
+
 ## Linux Server
 
-This section explains a fully featured setup on a Linux server with automatic startup of BioTraq when the server is rebooted.
+This section explains a fully featured setup on a Linux server with automatic startup of iBioTraq when the server is rebooted.
 
 ### Init Script
 
-BioTraq can be installed as a daemon on Linux via using the init script ```tools/biotraq``` (root privileges are required).
+iBioTraq can be installed as a daemon on Linux via using the init script ```tools/biotraq``` (root privileges are required).
 Modify the settings in the init script appropriately and copy it to ```/etc/init.d/```.
 The settings section of the init script looks as follows:
 
 ```
-## BioTraq settings
+## iBioTraq settings
 
 VERSION="1.0.0"
 INSTALL_DIR="/home/youruser/biotraq"
 CONFIG="biotraq.conf"
 OPTS=""
 
-## Linux user and group for BioTraq process
+## Linux user and group for iBioTraq process
 RUN_AS_USER="biotraq"
 RUN_AS_GROUP="biotraq"
 
@@ -220,9 +256,9 @@ MIN_MEMORY="256M"
 MAX_MEMORY="512M"
 ```
 
-Set the install directory ```INSTALL_DIR``` to the one where you copied the BioTraq jar file and initialized the database.
+Set the install directory ```INSTALL_DIR``` to the one where you copied the iBioTraq jar file and initialized the database.
 If you choose a different configuration name, you will have to adjust the variable ```CONFIG``` appropriately.
-It is recommended to create a user account dedicated to run BioTraq.
+It is recommended to create a user account dedicated to run iBioTraq.
 In the example above a user account ```biotraq``` with group ```biotraq``` is used.
 The minimal and maximal memory that is used by the JVM can be adjusted to your usage scenario.
 
@@ -269,8 +305,8 @@ ProxyPreserveHost On
 </VirtualHost>
   ```
     This sets up a a virtual host ```biotraq.yourhost.de``` on your domain ```yourhost.de``` using SSL encryption.
-    You need to specify the option ```:proxy-url "biotraq.yourhost.de``` in the BioTraq server configuration (```:server-config```).
-    You have to fill in ```BIOTRAQ-PORT``` with the port you specified in your BioTraq configuration file.
+    You need to specify the option ```:proxy-url "biotraq.yourhost.de``` in the iBioTraq server configuration (```:server-config```).
+    You have to fill in ```BIOTRAQ-PORT``` with the port you specified in your iBioTraq configuration file.
     The paths to the certificate file ```/path/to/certificate.crt``` and the certificate key file ```/path/to/keyfile.key``` must be filled in according to your server configuration.
     
 2. Using a subdirectory. You need to add the following to your existing virtual host:
@@ -280,7 +316,7 @@ ProxyPreserveHost On
   ProxyPassReverse http://localhost:BIOTRAQ-PORT/biotraq
 </Location>
 ```
-   You have to fill in ```BIOTRAQ-PORT``` with the port you specified in your BioTraq configuration file.
+   You have to fill in ```BIOTRAQ-PORT``` with the port you specified in your iBioTraq configuration file.
    You also need to specify ```ProxyRequests Off``` and ```ProxyPreserveHost On``` before the existing virtual host, e.g.
   ```
 ProxyRequests Off
@@ -297,16 +333,16 @@ ProxyPreserveHost On
   </Location>
 </VirtualHost>
   ```
-  In this case you also have to specify the options ```:server-root "biotraq"``` and ```:proxy-url "yourhost.de``` in the BioTraq server configuration (```:server-config```).
+  In this case you also have to specify the options ```:server-root "biotraq"``` and ```:proxy-url "yourhost.de``` in the iBioTraq server configuration (```:server-config```).
 
 ## Database
 
-The database that BioTraq uses is a SQLite database.
+The database that iBioTraq uses is a SQLite database.
 The [SQLite Database Browser](http://sqlitebrowser.org/) can be used to inspect the data stored in the database.
 
 ## License
 
-BioTraq is distributed under the MIT License:
+iBioTraq is distributed under the MIT License:
 
 The MIT License (MIT)
 

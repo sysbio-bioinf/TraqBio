@@ -21,7 +21,7 @@
 (ns biotraq.version)
 
 
-(def ^:private ^:const version "1.3.1")
+(def ^:private ^:const version "1.3.5-SNAPSHOT")
 
 
 (defn biotraq-version
