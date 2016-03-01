@@ -16,7 +16,7 @@ In addition classical laptop or desktop computers, it is also well usable from m
  
 ## Run in demo mode (with default config and without e-mail notification)
 
-For a quick demo of TraqBio switch to the directory where you downloaded the [TraqBio jar file](https://github.com/sysbio-bioinf/TraqBio/releases/download/v1.3.1/traqbio-1.3.1.jar) and the exemplary [keystore.jks](keystore.jks?raw=true).
+For a quick demo of TraqBio switch to the directory where you downloaded the [TraqBio jar file](https://github.com/sysbio-bioinf/TraqBio/releases/download/v1.3.5/traqbio-1.3.5.jar) and the exemplary [keystore.jks](keystore.jks?raw=true).
 
 ```
 $ cd traqbio
