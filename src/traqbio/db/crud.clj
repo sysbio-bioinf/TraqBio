@@ -18,15 +18,15 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.db.crud
+(ns traqbio.db.crud
   (:require
     [clojure.string :as str]
     [clojure.edn :as edn]
     [clojure.java.jdbc :as jdbc]
     [clojure.tools.logging :as log]
     [cemerick.friend.credentials :as creds]
-    [biotraq.config :as c]
-    [biotraq.common :as common]))
+    [traqbio.config :as c]
+    [traqbio.common :as common]))
 
 
 
@@ -524,7 +524,7 @@
   [{:keys [id] :as project}, {:keys [added, modified, deleted] :as step-changes}]
   (jdbc/with-db-transaction [t-conn (c/db-connection)]
     (jdbc/update! t-conn, :project, (normalize-project-data project) ["id = ?" id])
-    ; user notifications are handled separately in biotraq.actions.project
+    ; user notifications are handled separately in traqbio.actions.project
     ; update project steps
     (doseq [added-step added]
       (create-projectstep t-conn, (assoc added-step :project id)))

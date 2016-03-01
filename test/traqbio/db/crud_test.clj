@@ -1,15 +1,15 @@
-(ns biotraq.db.crud-test
+(ns traqbio.db.crud-test
   (:use expectations)
   (:require
-    [biotraq.config :as cfg]
-    [biotraq.core :as core]
-    [biotraq.db.crud :as crud]))
+    [traqbio.config :as cfg]
+    [traqbio.core :as core]
+    [traqbio.db.crud :as crud]))
 
 
 (def ^:const test-config
   {:log-level :off
-   :log-file  "biotraq-test.log"
-   :data-base-name "biotraq-test.db"
+   :log-file  "traqbio-test.log"
+   :data-base-name "traqbio-test.db"
    :admin-shutdown? false
    :upload-path "test-uploads/"
    :server-config {:port 42235
@@ -22,7 +22,7 @@
    :mail-config {:send-mail? false}})
 
 
-(defn setup-biotraq-test-instance
+(defn setup-traqbio-test-instance
   "loads test data"
   {:expectations-options :before-run}
   []

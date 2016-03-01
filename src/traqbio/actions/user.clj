@@ -18,16 +18,16 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.actions.user
+(ns traqbio.actions.user
   (:require
     [clojure.string :as str]
     [clojure.edn :as edn]
     [clojure.tools.logging :as log]
     [cemerick.friend :as friend]
-    [biotraq.config :as c]
-    [biotraq.db.crud :as crud]
-    [biotraq.actions.tools :as t]
-    [biotraq.actions.mail :as mail]))
+    [traqbio.config :as c]
+    [traqbio.db.crud :as crud]
+    [traqbio.actions.tools :as t]
+    [traqbio.actions.mail :as mail]))
 
       
 (def user-attributes
@@ -71,7 +71,7 @@
   [{:keys [username] :as user}]
   (let [editing-role (:role (friend/current-authentication)),
         user-role (edn/read-string (:role (crud/read-user username)))]
-    (if (or (not= user-role :biotraq.config/configadmin) (= editing-role :biotraq.config/configadmin))
+    (if (or (not= user-role :traqbio.config/configadmin) (= editing-role :traqbio.config/configadmin))
       (if (crud/put-user user)
         {:body user :status 200}
         {:body {:error (format "There is no user named \"%s\"." username)} :status 404})
@@ -100,7 +100,7 @@
    :action-type :delete}
   [username]
   (cond
-    (and (= (:role (crud/read-user username)) :biotraq.config/configadmin) (not= (:role (friend/current-authentication)) :biotraq.config/configadmin))
+    (and (= (:role (crud/read-user username)) :traqbio.config/configadmin) (not= (:role (friend/current-authentication)) :traqbio.config/configadmin))
       {:status 403, :body {:error "You are not allowed to delete that user."}}
     (= (:username (friend/current-authentication)) username)
       {:status 403, :body {:error "You must not delete yourself."}}

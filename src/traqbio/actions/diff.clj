@@ -18,12 +18,12 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.actions.diff
+(ns traqbio.actions.diff
   (:require
     [clojure.data :as data]
     [clojure.string :as str]
-    [biotraq.actions.tools :as t]
-    [biotraq.db.crud :as db]))
+    [traqbio.actions.tools :as t]
+    [traqbio.db.crud :as db]))
 
 
 (defn compare-steps

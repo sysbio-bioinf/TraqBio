@@ -3,13 +3,13 @@ ProxyPreserveHost On
 
 
 <VirtualHost *:80>
-   ServerName biotraq.yourhost.de
-   Redirect permanent / https://biotraq.yourhost.de/
+   ServerName traqbio.yourhost.de
+   Redirect permanent / https://traqbio.yourhost.de/
 </VirtualHost>
 
 
 <VirtualHost *:443>
-   ServerName biotraq.yourhost.de
+   ServerName traqbio.yourhost.de
 
    SSLEngine On
    SSLProxyEngine On
@@ -17,10 +17,10 @@ ProxyPreserveHost On
    SSLCertificateFile /path/to/certificate.crt
    SSLCertificateKeyFile /path/to/keyfile.key
 
-   ProxyPass / http://localhost:BIOTRAQ-PORT/
-   ProxyPassReverse / http://localhost:BIOTRAQ-PORT/
+   ProxyPass / http://localhost:TRAQBIO-PORT/
+   ProxyPassReverse / http://localhost:TRAQBIO-PORT/
    ProxyPassReverseCookiePath / /
    RequestHeader set X-Forwarded-Proto "https"
-   ErrorLog /var/log/apache2/biotraq.log
-   CustomLog /var/log/apache2/biotraq.log common
+   ErrorLog /var/log/apache2/traqbio.log
+   CustomLog /var/log/apache2/traqbio.log common
 </VirtualHost>

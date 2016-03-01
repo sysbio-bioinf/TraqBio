@@ -18,13 +18,13 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.actions.templates
+(ns traqbio.actions.templates
   (:require
     [clojure.data :as data]
     [clojure.string :as str]
-    [biotraq.db.crud :as crud]
-    [biotraq.actions.tools :as t]
-    [biotraq.actions.diff :as diff]))
+    [traqbio.db.crud :as crud]
+    [traqbio.actions.tools :as t]
+    [traqbio.actions.diff :as diff]))
 
 
 (defn get-templates

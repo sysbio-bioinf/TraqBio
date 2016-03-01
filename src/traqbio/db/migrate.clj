@@ -18,13 +18,13 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.db.migrate
+(ns traqbio.db.migrate
   (:require
     [clojure.java.io :as io]
     [clojure.java.jdbc :as jdbc]
-    [biotraq.config :as c]
-    [biotraq.db.init :as init]
-    [biotraq.db.crud :as crud]))
+    [traqbio.config :as c]
+    [traqbio.db.init :as init]
+    [traqbio.db.crud :as crud]))
 
 
 (defn table-set

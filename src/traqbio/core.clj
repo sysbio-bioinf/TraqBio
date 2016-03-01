@@ -18,7 +18,7 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.core
+(ns traqbio.core
   (:require
     [clojure.string :as string]
     [clojure.stacktrace :refer [print-cause-trace]]
@@ -32,14 +32,14 @@
     (cemerick.friend
       [workflows :as workflows]
       [credentials :as creds])
-    [biotraq.config :as c]
-    [biotraq.routes :as routes]
-    [biotraq.db.crud :as crud]
-    [biotraq.db.init :as init]
-    [biotraq.db.migrate :as migrate]
-    [biotraq.runtime :as runtime]
-    [biotraq.actions.templates :as tmpl]
-    [biotraq.actions.tools :as tools])
+    [traqbio.config :as c]
+    [traqbio.routes :as routes]
+    [traqbio.db.crud :as crud]
+    [traqbio.db.init :as init]
+    [traqbio.db.migrate :as migrate]
+    [traqbio.runtime :as runtime]
+    [traqbio.actions.templates :as tmpl]
+    [traqbio.actions.tools :as tools])
   (:gen-class))
 
 
@@ -74,9 +74,9 @@
     ["-a" "--admin NAME" "Name of the admin user"
      :default "admin"]
     ["-p" "--password SECRET" "Admins password"
-     :default "biotraq"]
+     :default "traqbio"]
     ["-d" "--data-base-name NAME" "Name of the database. Traqseq will not ovveride a existing database file."
-     :default "biotraq.db"]
+     :default "traqbio.db"]
     ["-t" "--template-file NAME" "Path to file with a initial set of templates."]
     ["-h" "--help"]
   ])
@@ -84,35 +84,35 @@
 (def run-options
   [
     ["-c" "--config-file FILENAME" "Path to the config file"
-     :default "biotraq.conf"]
+     :default "traqbio.conf"]
     ["-h" "--help"]
   ])
 
 (def app-options [])
 
 (defn app-usage []
-  (->> ["Usage: biotraq action args"
+  (->> ["Usage: traqbio action args"
         ""
         "Actions:"
-        "  init             Initialize the BioTraq instance"
-        "  run              Run BioTraq"
+        "  init             Initialize the TraqBio instance"
+        "  run              Run TraqBio"
         "  export db file   Export given database to the specified file."
         "  import db file   Import data from given file into the specified data base."
         ""
         "For informations about args use:"
-        "  biotraq init -h"
+        "  traqbio init -h"
         "or"
-        "  biotraq run -h"]
+        "  traqbio run -h"]
        (string/join \newline)))
 
 (defn init-usage [summary]
-  (->> ["Initialise the BioTraq instance."
+  (->> ["Initialise the TraqBio instance."
         ""
         summary]
        (string/join \newline)))
 
 (defn run-usage [summary]
-  (->> ["Start the BioTraq instance with a given config file."
+  (->> ["Start the TraqBio instance with a given config file."
         ""
         summary]
        (string/join \newline)))
@@ -135,7 +135,7 @@
                   "The database file \"%s\" does not exist!\n"
                   "You have the following two options to fix that:\n"
                   "(1) Fix the path to the existing database file in the configuration \"%s\".\n"
-                  "(2) Rerun the BioTraq initialisation.")
+                  "(2) Rerun the TraqBio initialisation.")
                 (-> db-filename io/file .getAbsolutePath),
                 (-> config-filename io/file .getAbsolutePath))]
       (println msg)
@@ -164,7 +164,7 @@
 
 
 (defn run
-  "Run BioTraq"
+  "Run TraqBio"
   [& run-args]
   (let [{:keys [options errors summary]} (parse-opts (first run-args) run-options)]
     ;; Handle help and error conditions
@@ -201,7 +201,7 @@
 
 
 (defn init
-  "Init BioTraq"
+  "Init TraqBio"
   [& init-args]
   (let [{:keys [options errors summary]} (parse-opts (first init-args) init-options)]
     ;; Handle help and error conditions
@@ -209,13 +209,13 @@
       (:help options) (exit 0 (init-usage summary))
       errors (exit 1 (error-msg errors)))
     ;; Create default conf
-    (when-not (.exists (clojure.java.io/as-file "biotraq.conf"))
-      (c/write-config-file "biotraq.conf", (dissoc options :password :admin :template-file)))
+    (when-not (.exists (clojure.java.io/as-file "traqbio.conf"))
+      (c/write-config-file "traqbio.conf", (dissoc options :password :admin :template-file)))
     ;; create db
     (when (init/create-database-if-needed (:data-base-name options))
       ; database had to be created, add admin user
       (crud/put-user {:username (:admin options), :password (:password options) :role ::c/configadmin})
-      (crud/insert-log {:success 1, :date (tools/now), :type "create", :action "BioTraq instance created."}))
+      (crud/insert-log {:success 1, :date (tools/now), :type "create", :action "TraqBio instance created."}))
     (c/update-db-name (:data-base-name options))
     (when-let [template-file (:template-file options)]
       (let [templates (read-string (slurp template-file))]

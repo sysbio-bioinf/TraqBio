@@ -18,16 +18,16 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.actions.mail
+(ns traqbio.actions.mail
   (:require
     [clojure.string :as str]
     [clojure.stacktrace :refer [print-cause-trace]]
     [clojure.tools.logging :as log]
     [selmer.parser :as parser]
     [postal.core :as postal]
-    [biotraq.config :as c]
-    [biotraq.db.crud :as crud]
-    [biotraq.actions.tools :as t])
+    [traqbio.config :as c]
+    [traqbio.db.crud :as crud]
+    [traqbio.actions.tools :as t])
   (:import
     javax.mail.SendFailedException))
 
@@ -117,7 +117,7 @@
                (merge
                  format-map
                  {:to email
-                  :error-context (format "Project \"%s\" notification for BioTraq user %s:" (:projectnumber project) staffname)})))))))
+                  :error-context (format "Project \"%s\" notification for TraqBio user %s:" (:projectnumber project) staffname)})))))))
     (catch Throwable t
       (log/errorf "Exception when trying to send project creation notification e-mails:\n%s"
         (with-out-str (print-cause-trace t))))))
@@ -129,7 +129,7 @@
   (if user-email
     (let [{:keys [host-config, from, subject, body]} (c/mail-config)]
        (send-mail host-config, from, user-email,
-         "BioTraq Password Reset",
+         "TraqBio Password Reset",
          (str "You can reset your password by using the following link:\n" request-url),
          :error-context (format "Password reset (user \"%s\", email: %s):" user-name, user-email)))
     (log/errorf "Could not send password reset e-mail to user %s because of missing e-mail address!" user-name)))

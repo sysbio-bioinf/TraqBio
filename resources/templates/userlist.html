@@ -34,8 +34,8 @@
                         <div class="form-group">
                             <label for="newRole">Select Role</label>
                             <select id="newRole" name="role" class="form-control">
-                                <option value=":biotraq.config/user">User</option>
-                                <option value=":biotraq.config/admin">Admin</option>
+                                <option value=":traqbio.config/user">User</option>
+                                <option value=":traqbio.config/admin">Admin</option>
                             </select>
                         </div>
                         <button type="submit" class="btn btn-default">Create</button>
@@ -66,14 +66,14 @@
                             <td class="cell-username">{{user.username}}</td>
                             <td class="cell-fullname">{{user.fullname}}</td>
                             <td class="cell-email">{{user.email}}</td>
-                            <td class="cell-roles">{% ifequal user.role ":biotraq.config/user" %}User{% else %}Admin{% endifequal %}</td>
+                            <td class="cell-roles">{% ifequal user.role ":traqbio.config/user" %}User{% else %}Admin{% endifequal %}</td>
                             <td>
-                                <a class="btn btn-default" href="{{serverRoot}}/usr/{{user.username}}" data-toggle="modal" data-target="#edit-dialog" {% ifequal user.role ":biotraq.config/configadmin" %}{% if request.isConfigAdmin %}enabled{% else %}disabled{% endif %}{% endifequal %}>
+                                <a class="btn btn-default" href="{{serverRoot}}/usr/{{user.username}}" data-toggle="modal" data-target="#edit-dialog" {% ifequal user.role ":traqbio.config/configadmin" %}{% if request.isConfigAdmin %}enabled{% else %}disabled{% endif %}{% endifequal %}>
                                     <span class="glyphicon glyphicon-pencil"></span>
                                 </a>
                             </td>
                             <td>
-                                <button class="btn btn-default btn-delete-user" type="button" data-user="{{user.username}}" {% ifequal user.role ":biotraq.config/configadmin" %}{% if request.isConfigAdmin %}enabled{% else %}disabled{% endif %}{% endifequal %}>
+                                <button class="btn btn-default btn-delete-user" type="button" data-user="{{user.username}}" {% ifequal user.role ":traqbio.config/configadmin" %}{% if request.isConfigAdmin %}enabled{% else %}disabled{% endif %}{% endifequal %}>
                                     <span class="glyphicon glyphicon-trash"></span>
                                 </button>
                             </td>

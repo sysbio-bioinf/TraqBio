@@ -18,13 +18,13 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.runtime
+(ns traqbio.runtime
   (:require
     [clojure.string :as str]
     [clojure.stacktrace :refer [print-cause-trace]]
     [ring.adapter.jetty :as jetty]
     [clojure.tools.logging :as log]
-    [biotraq.config :as c])
+    [traqbio.config :as c])
   (:import
     (org.eclipse.jetty.server Server AbstractConnector)
     org.eclipse.jetty.server.ssl.SslSelectChannelConnector
@@ -86,7 +86,7 @@
                      (not ssl?) (dissoc :ssl-port :key-password :keystore)))]
       (alter-var-root #'running-server (constantly server))
       (let [{:keys [host, port, ssl-port, ssl?, server-root]} (c/server-config)]
-        (println "BioTraq started - Server listening on:")
+        (println "TraqBio started - Server listening on:")
         (println (server-url host, port, false, server-root))
         (when ssl?
           (println (server-url host, ssl-port, true, server-root))))
@@ -148,7 +148,7 @@
 
 
 (defn configure-logging
-  "Configures the logging for BioTraq. Log level and log file can be specified in the configuration."
+  "Configures the logging for TraqBio. Log level and log file can be specified in the configuration."
   [{:keys [log-level, log-file] :as config}]
   (let [props (doto (System/getProperties)
                 (.setProperty "log4j.rootLogger" (format "%s, file" (-> log-level name str/upper-case)))

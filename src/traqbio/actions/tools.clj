@@ -18,7 +18,7 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.actions.tools
+(ns traqbio.actions.tools
   (:import (java.util Calendar)
            (java.text SimpleDateFormat))
   (:require
@@ -28,7 +28,7 @@
     [clojure.tools.logging :as log]
     [cemerick.friend :as friend]
     [selmer.parser :as tmpl]
-    [biotraq.db.crud :as crud]))
+    [traqbio.db.crud :as crud]))
 
 ; shamles copy from https://github.com/guv/clj-debug/blob/master/src/debug/intercept.clj
 (defn process-defn-decl

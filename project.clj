@@ -3,7 +3,7 @@
 (defn get-version
   []
   (let [version-fn (try
-                     (load-file "src/biotraq/version.clj")
+                     (load-file "src/traqbio/version.clj")
                      (catch java.io.FileNotFoundException e
                        ; workaround for CCW (version number is not needed anyway)
                        (constantly "0.0.0-REPL-DEV")))]
@@ -11,9 +11,9 @@
 
 (def version (get-version))
 
-(defproject biotraq version
+(defproject traqbio version
   :description "Track laboratory projects"
-  :main biotraq.core
+  :main traqbio.core
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [compojure "1.3.2"]
                  [com.cemerick/friend "0.2.1"]
@@ -29,8 +29,8 @@
                  [org.clojure/tools.logging "0.3.1"]       ; logging, e.g. for fail2ban usage
                  [org.slf4j/slf4j-api "1.7.10"]
                  [org.slf4j/slf4j-log4j12 "1.7.10"]]
-  :jar-name ~(format "biotraq-lib-%s.jar" version)
-  :uberjar-name ~(format "biotraq-%s.jar" version)
+  :jar-name ~(format "traqbio-lib-%s.jar" version)
+  :uberjar-name ~(format "traqbio-%s.jar" version)
   :profiles {:uberjar {:aot :all},
              :dev
              {:dependencies

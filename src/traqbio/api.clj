@@ -18,14 +18,14 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.api
+(ns traqbio.api
   (:require
     [clojure.string :as str]
     [ring.util.response :as response]
-    [biotraq.config :as c]
-    [biotraq.db.crud :as crud]
-    [biotraq.actions.tools :as t]
-    [biotraq.actions.project :as p]))
+    [traqbio.config :as c]
+    [traqbio.db.crud :as crud]
+    [traqbio.actions.tools :as t]
+    [traqbio.actions.project :as p]))
 
 
 

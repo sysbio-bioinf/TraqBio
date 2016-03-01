@@ -1,6 +1,6 @@
-# iBioTraq
+# TraqBio
 
-iBioTraq enables a simple and flexible tracking of core unit projects.
+TraqBio enables a simple and flexible tracking of core unit projects.
 In addition classical laptop or desktop computers, it is also well usable from mobile devices like tablets and smartphones.
 
 * Admin and user roles for your staff
@@ -12,71 +12,72 @@ In addition classical laptop or desktop computers, it is also well usable from m
     - Create the new Project and save the customized template under a new name
 * Ad hoc deviations from the predefined templates are possible.
 * Keep track of your old projects with the archive page
+* REST-based Scripting API (work in progress)
  
 ## Run in demo mode (with default config and without e-mail notification)
 
-For a quick demo of iBioTraq switch to the directory where you downloaded the [iBioTraq jar file](https://github.com/sysbio-bioinf/iBioTraq/releases/download/v1.3.1/biotraq-1.3.1.jar) and the exemplary [keystore.jks](keystore.jks?raw=true). 
+For a quick demo of TraqBio switch to the directory where you downloaded the [TraqBio jar file](https://github.com/sysbio-bioinf/TraqBio/releases/download/v1.3.1/traqbio-1.3.1.jar) and the exemplary [keystore.jks](keystore.jks?raw=true).
 
 ```
-$ cd biotraq
+$ cd traqbio
 $ ls
-biotraq.jar keystore.jks 
+traqbio.jar keystore.jks
 ...
 ```
-The run iBioTraq as follows to create an initial configuration file and an initial database.
+The run TraqBio as follows to create an initial configuration file and an initial database.
 ```
-$ java -jar biotraq.jar init
+$ java -jar traqbio.jar init
 ```
-The files ```biotraq.conf``` and ```biotraq.db``` should have been created.
+The files ```traqbio.conf``` and ```traqbio.db``` should have been created.
 ```
 $ ls
-biotraq.jar keystore.jks 
-biotraq.conf biotraq.db
+traqbio.jar keystore.jks
+traqbio.conf traqbio.db
 ```
-Finally, start the iBioTraq web application.
+Finally, start the TraqBio web application.
 ```
-$ java -jar biotraq run
+$ java -jar traqbio.jar run
 ```
 
-Now go to https://localhost:8443/ and sign in with the default credentials: username = *admin* and password = *biotraq*.
+Now go to https://localhost:8443/ and sign in with the default credentials: username = *admin* and password = *traqbio*.
 
 # Detailed description
 ## Prerequisites
 
-When running iBioTraq with SSL (:ssl? true), you need a Java KeyStore (*.jks) containing the SSL certificate to run iBioTraq.
+When running TraqBio with SSL (:ssl? true), you need a Java KeyStore (*.jks) containing the SSL certificate to run TraqBio.
 You can create a KeyStore with JDK's keytool.
 http://docs.oracle.com/javase/7/docs/technotes/tools/windows/keytool.html
 
 ## Usage
 
-To initialize iBioTraq run the jar with the following parameters:
+To initialize TraqBio run the jar with the following parameters:
 
 ```
- java -jar biotraq.jar init
+ java -jar traqbio.jar init
                               Default     Description  
                               -------     -----------  
   -a, --admin          NAME   admin       Name of the admin user  
-  -p, --password       SECRET biotraq     Admins password  
-  -d, --data-base-name NAME   biotraq.db  Name of the database. iBioTraq will not override a existing database file.
+  -p, --password       SECRET traqbio     Admins password
+  -d, --data-base-name NAME   traqbio.db  Name of the database. TraqBio will not override a existing database file.
   -t, --template-file  NAME               Path to file with a initial set of templates.  
 ```
 
 This will create the database with an administrator user and it will bootstrap a default config file.
 Please update the entries in the config file (details below).
 
-You can run iBioTraq after the initialisation:
+You can run TraqBio after the initialisation:
 
 ```  
- java -jar biotraq.jar run
+ java -jar traqbio.jar run
                               Default       Description  
                               -------       -----------
-  -c, --config-file FILENAME  biotraq.conf  Path to the config file 
+  -c, --config-file FILENAME  traqbio.conf  Path to the config file
 ```
  
 ## Config
 
-The following listing shows an example configuration for iBioTraq.
-(Actually this is the default configuration generated via ```java -jar biotraq.jar init```.)
+The following listing shows an example configuration for TraqBio.
+(Actually this is the default configuration generated via ```java -jar traqbio.jar init```.)
 ```clojure
 {; mostly Jetty config (see: https://ring-clojure.github.io/ring/ring.adapter.jetty.html )  
  :server-config
@@ -87,24 +88,24 @@ The following listing shows an example configuration for iBioTraq.
   :ssl? true,
   :key-password "password",
   :forwarded? false,
-  :server-root "",         ; prefix directory for all iBioTraq URLs (routes)
+  :server-root "",         ; prefix directory for all TraqBio URLs (routes)
   :proxy-url nil,          ; hostname of the proxying server, e.g. via Apache (see below, Apache as Proxy)
   :ssl-port 8443},
   
- :data-base-name "biotraq.db", ; filename of SQLite database
+ :data-base-name "traqbio.db", ; filename of SQLite database
  
  ; logging setup
  :log-level :info,
- :log-file "biotraq.log",
+ :log-file "traqbio.log",
  
- :admin-shutdown? true, ; allow the iBioTraq admin to shut down iBioTraq from the web interface
+ :admin-shutdown? true, ; allow the TraqBio admin to shut down TraqBio from the web interface
  
  ; Branding
  :page-title "",      ; page title to display
  :page-title-link "", ; link to an external website to render beside the page title
  
- :upload-path "uploads/", ; Upload path for sample sheets and order forms. iBioTraq needs write permission for 
-                          ; this folder. iBioTraq will create subfolders for every project. 
+ :upload-path "uploads/", ; Upload path for sample sheets and order forms. TraqBio needs write permission for
+                          ; this folder. TraqBio will create subfolders for every project.
  
  ; e-mail configuration
  :mail-config
@@ -117,7 +118,7 @@ The following listing shows an example configuration for iBioTraq.
    :pass "secret", ; e-mail account password
    :tls :yes,
    :port 587},  
-  :from "john.smith@uni-ulm.de", ; visible sender e-mail address in iBioTraq notification e-mails
+  :from "john.smith@uni-ulm.de", ; visible sender e-mail address in TraqBio notification e-mails
   ; e-mail templates for project creation notification
   :project-creation
   {; template for notifying the staff
@@ -150,7 +151,7 @@ You recieve this e-mail because you have registered a project at the YOUR LAB.
 You can track the progress of your samples through the various steps performed via the following link:
 {{trackinglink}}
 
-This e-mail was automatically generated by iBioTraq, a sample tracking tool developed by the Research Group for Bioinformatics & Systems Biology, headed by Prof. Dr. Hans A. Kestler.
+This e-mail was automatically generated by TraqBio, a sample tracking tool developed by the Research Group for Bioinformatics & Systems Biology, headed by Prof. Dr. Hans A. Kestler.
 
 Yours sincerely,
              YOUR NAME
@@ -190,86 +191,86 @@ Use the [edn](https://github.com/edn-format/edn) syntax for the template file.
 
 An example template file is the ```proteomics.init``` in this repository which can be used in the initilization as follows.
 ```
-java -jar biotraq.jar init -t proteomics.init
+java -jar traqbio.jar init -t proteomics.init
 ```
 
-## Scripting
+## Scripting (work in progress)
 
 TODO: more detailed description
 
 Login in shell script:
 ```
-curl -i -c cookies.txt -X POST -d 'username=john&password=secret' "https://your.biotraq.tld/login"
+curl -i -c cookies.txt -X POST -d 'username=john&password=secret' "https://your.traqbio.tld/login"
 ```
 Perform requests in shell script:
 ```
-curl -i -b cookies.txt -c cookies.txt "https://your.biotraq.tld/api/list-projects"
+curl -i -b cookies.txt -c cookies.txt "https://your.traqbio.tld/api/list-projects"
 ```
 (Add "-k" when a self-signed certificate is used in a test/development scenario.)
 
 
 ```
-curl -s -k -b cookies.txt -c cookies.txt "https://your.biotraq.tld/api/active-project-list"
+curl -s -k -b cookies.txt -c cookies.txt "https://your.traqbio.tld/api/active-project-list"
 ```
 
 ```
-for p in $(curl -s -k -b cookies.txt -c cookies.txt "https://your.biotraq.tld/api/active-project-list"); do echo "project" $p; done
+for p in $(curl -s -k -b cookies.txt -c cookies.txt "https://your.traqbio.tld/api/active-project-list"); do echo "project" $p; done
 ```
 
 ```
-curl -s -k -b cookies.txt -c cookies.txt "https://your.biotraq.tld/api/project/5/is-active-step" -G --data-urlencode "name=The step title"
+curl -s -k -b cookies.txt -c cookies.txt "https://your.traqbio.tld/api/project/5/is-active-step" -G --data-urlencode "name=The step title"
 ```
 
 ```
-curl -s -k -b cookies.txt -c cookies.txt -X POST "https://your.biotraq.tld/api/project/7/finish-step/25" --data-urlencode "description=la li lu" --data-urlencode "freetext=FERTIG!" --data-urlencode "advisor=Max Mustermann"
+curl -s -k -b cookies.txt -c cookies.txt -X POST "https://your.traqbio.tld/api/project/7/finish-step/25" --data-urlencode "description=la li lu" --data-urlencode "freetext=FERTIG!" --data-urlencode "advisor=Max Mustermann"
 ```
 
 ```
-curl -s -k -b cookies.txt -c cookies.txt "https://your.biotraq.tld/api/project/7/sample-sheet" -f -o samplesheet.txt
+curl -s -k -b cookies.txt -c cookies.txt "https://your.traqbio.tld/api/project/7/sample-sheet" -f -o samplesheet.txt
 ```
 
 
 ## Linux Server
 
-This section explains a fully featured setup on a Linux server with automatic startup of iBioTraq when the server is rebooted.
+This section explains a fully featured setup on a Linux server with automatic startup of TraqBio when the server is rebooted.
 
 ### Init Script
 
-iBioTraq can be installed as a daemon on Linux via using the init script ```tools/biotraq``` (root privileges are required).
+TraqBio can be installed as a daemon on Linux via using the init script ```tools/traqbio``` (root privileges are required).
 Modify the settings in the init script appropriately and copy it to ```/etc/init.d/```.
 The settings section of the init script looks as follows:
 
 ```
-## iBioTraq settings
+## TraqBio settings
 
 VERSION="1.0.0"
-INSTALL_DIR="/home/youruser/biotraq"
-CONFIG="biotraq.conf"
+INSTALL_DIR="/home/youruser/traqbio"
+CONFIG="traqbio.conf"
 OPTS=""
 
-## Linux user and group for iBioTraq process
-RUN_AS_USER="biotraq"
-RUN_AS_GROUP="biotraq"
+## Linux user and group for TraqBio process
+RUN_AS_USER="traqbio"
+RUN_AS_GROUP="traqbio"
 
 ## memory settings for the JVM
 MIN_MEMORY="256M"
 MAX_MEMORY="512M"
 ```
 
-Set the install directory ```INSTALL_DIR``` to the one where you copied the iBioTraq jar file and initialized the database.
+Set the install directory ```INSTALL_DIR``` to the one where you copied the TraqBio jar file and initialized the database.
 If you choose a different configuration name, you will have to adjust the variable ```CONFIG``` appropriately.
-It is recommended to create a user account dedicated to run iBioTraq.
-In the example above a user account ```biotraq``` with group ```biotraq``` is used.
+It is recommended to create a user account dedicated to run TraqBio.
+In the example above a user account ```traqbio``` with group ```traqbio``` is used.
 The minimal and maximal memory that is used by the JVM can be adjusted to your usage scenario.
 
-After copying ```tools/biotraq``` to ```/etc/init.d/biotraq``` you can configure the automatic startup on server boot
+After copying ```tools/traqbio``` to ```/etc/init.d/traqbio``` you can configure the automatic startup on server boot
 via the operating system tools, e.g.  ```rcconf```.
 Manual start, stop and restart is possible via the following:
 
 ```
-/etc/init.d/biotraq start
-/etc/init.d/biotraq stop
-/etc/init.d/biotraq restart
+/etc/init.d/traqbio start
+/etc/init.d/traqbio stop
+/etc/init.d/traqbio restart
 ```
 
 ### Apache as Proxy
@@ -277,19 +278,19 @@ Manual start, stop and restart is possible via the following:
 We describe two possibilities to use Apache as a proxy for BioTrac:
 
 1. Using a subdomain of your domain (virtual host).
-   You need to have a virtual host definition in ```/etc/apache2/sites-available/biotraq``` like the following:
-  ```
+   You need to have a virtual host definition in ```/etc/apache2/sites-available/traqbio``` like the following:
+```
 ProxyRequests Off
 ProxyPreserveHost On
 
 <VirtualHost *:80>
-  ServerName biotraq.yourhost.de
-  Redirect permanent / https://biotraq.yourhost.de/
+  ServerName traqbio.yourhost.de
+  Redirect permanent / https://traqbio.yourhost.de/
 </VirtualHost>
 
 
 <VirtualHost *:443>
-  ServerName biotraq.yourhost.de
+  ServerName traqbio.yourhost.de
 
   SSLEngine On
   SSLProxyEngine On
@@ -297,28 +298,28 @@ ProxyPreserveHost On
   SSLCertificateFile /path/to/certificate.crt
   SSLCertificateKeyFile /path/to/keyfile.key
 
-  ProxyPass / http://localhost:BIOTRAQ-PORT/
-  ProxyPassReverse / http://localhost:BIOTRAQ-PORT/
+  ProxyPass / http://localhost:TRAQBIO-PORT/
+  ProxyPassReverse / http://localhost:TRAQBIO-PORT/
   RequestHeader set X-Forwarded-Proto "https"
-  ErrorLog /var/log/apache2/biotraq.log
-  CustomLog /var/log/apache2/biotraq.log common
+  ErrorLog /var/log/apache2/traqbio.log
+  CustomLog /var/log/apache2/traqbio.log common
 </VirtualHost>
-  ```
-    This sets up a a virtual host ```biotraq.yourhost.de``` on your domain ```yourhost.de``` using SSL encryption.
-    You need to specify the option ```:proxy-url "biotraq.yourhost.de``` in the iBioTraq server configuration (```:server-config```).
-    You have to fill in ```BIOTRAQ-PORT``` with the port you specified in your iBioTraq configuration file.
-    The paths to the certificate file ```/path/to/certificate.crt``` and the certificate key file ```/path/to/keyfile.key``` must be filled in according to your server configuration.
+```
+This sets up a a virtual host ```traqbio.yourhost.de``` on your domain ```yourhost.de``` using SSL encryption.
+You need to specify the option ```:proxy-url "traqbio.yourhost.de``` in the TraqBio server configuration (```:server-config```).
+You have to fill in ```TRAQBIO-PORT``` with the port you specified in your TraqBio configuration file.
+The paths to the certificate file ```/path/to/certificate.crt``` and the certificate key file ```/path/to/keyfile.key``` must be filled in according to your server configuration.
     
 2. Using a subdirectory. You need to add the following to your existing virtual host:
-   ```
-<Location /biotraq>
-  ProxyPass        http://localhost:BIOTRAQ-PORT/biotraq
-  ProxyPassReverse http://localhost:BIOTRAQ-PORT/biotraq
+```
+<Location /traqbio>
+  ProxyPass        http://localhost:TRAQBIO-PORT/traqbio
+  ProxyPassReverse http://localhost:TRAQBIO-PORT/traqbio
 </Location>
 ```
-   You have to fill in ```BIOTRAQ-PORT``` with the port you specified in your iBioTraq configuration file.
-   You also need to specify ```ProxyRequests Off``` and ```ProxyPreserveHost On``` before the existing virtual host, e.g.
-  ```
+You have to fill in ```TRAQBIO-PORT``` with the port you specified in your TraqBio configuration file.
+You also need to specify ```ProxyRequests Off``` and ```ProxyPreserveHost On``` before the existing virtual host, e.g.
+```
 ProxyRequests Off
 ProxyPreserveHost On
 
@@ -327,26 +328,26 @@ ProxyPreserveHost On
   
   ...
   
-  <Location /biotraq>
-    ProxyPass        http://localhost:BIOTRAQ-PORT/biotraq
-    ProxyPassReverse http://localhost:BIOTRAQ-PORT/biotraq
+  <Location /traqbio>
+    ProxyPass        http://localhost:TRAQBIO-PORT/traqbio
+    ProxyPassReverse http://localhost:TRAQBIO-PORT/traqbio
   </Location>
 </VirtualHost>
-  ```
-  In this case you also have to specify the options ```:server-root "biotraq"``` and ```:proxy-url "yourhost.de``` in the iBioTraq server configuration (```:server-config```).
+```
+In this case you also have to specify the options ```:server-root "traqbio"``` and ```:proxy-url "yourhost.de``` in the TraqBio server configuration (```:server-config```).
 
 ## Database
 
-The database that iBioTraq uses is a SQLite database.
+The database that TraqBio uses is a SQLite database.
 The [SQLite Database Browser](http://sqlitebrowser.org/) can be used to inspect the data stored in the database.
 
 ## License
 
-iBioTraq is distributed under the MIT License:
+TraqBio is distributed under the MIT License:
 
 The MIT License (MIT)
 
-Copyright Fabian Schneider and Gunnar Völkel © 2014-2015
+Copyright Fabian Schneider and Gunnar Völkel © 2014-2016
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

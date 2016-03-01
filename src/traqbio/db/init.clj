@@ -18,11 +18,11 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.db.init
+(ns traqbio.db.init
   (:require
     [clojure.java.jdbc :as jdbc]
-    [biotraq.config :as c]
-    [biotraq.actions.tools :as tools]))
+    [traqbio.config :as c]
+    [traqbio.actions.tools :as tools]))
 
 
 (defn create-user-table
@@ -180,7 +180,7 @@
 
 
 (defn create-user-notification-table
-  "Creates the table for storing the specified BioTraq users to notify on project step completion events."
+  "Creates the table for storing the specified TraqBio users to notify on project step completion events."
   [db-conn]
   (jdbc/db-do-commands
     db-conn

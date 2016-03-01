@@ -18,7 +18,7 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.actions.project
+(ns traqbio.actions.project
   (:require
     [clojure.data :as data]
     [clojure.java.io :as io]
@@ -28,12 +28,12 @@
     [clojure.tools.logging :as log]
     [cemerick.friend :as friend]
     [ring.util.http-response :as r]    
-    [biotraq.config :as c]
-    [biotraq.common :as common]
-    [biotraq.db.crud :as crud]
-    [biotraq.actions.mail :as mail]
-    [biotraq.actions.tools :as t]
-    [biotraq.actions.diff :as diff])
+    [traqbio.config :as c]
+    [traqbio.common :as common]
+    [traqbio.db.crud :as crud]
+    [traqbio.actions.mail :as mail]
+    [traqbio.actions.tools :as t]
+    [traqbio.actions.diff :as diff])
   (:import
     java.util.UUID))
 

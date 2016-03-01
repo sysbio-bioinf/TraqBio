@@ -18,12 +18,12 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.version)
+(ns traqbio.version)
 
 
 (def ^:private ^:const version "1.3.5-SNAPSHOT")
 
 
-(defn biotraq-version
+(defn traqbio-version
   []
   version)

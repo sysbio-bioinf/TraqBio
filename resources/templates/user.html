@@ -32,9 +32,9 @@
             <div class="form-group">
                 <label for="newRole" class="col-sm-2 control-label">Select Role</label>
                 <div class="col-sm-10">
-                    <select id="newRole" name="role" class="form-control" {% ifequal user.role ":biotraq.config/configadmin" %}disabled{% endifequal %}>
-                        <option value=":biotraq.config/user" {% ifequal user.role ":biotraq.config/user" %}selected{% endifequal %}>User</option>
-                        <option value=":biotraq.config/admin" {% ifequal user.role ":biotraq.config/admin" %}selected{% else %}{% ifequal user.role ":biotraq.config/configadmin" %}selected{% endifequal %}{% endifequal %}>Admin</option>
+                    <select id="newRole" name="role" class="form-control" {% ifequal user.role ":traqbio.config/configadmin" %}disabled{% endifequal %}>
+                        <option value=":traqbio.config/user" {% ifequal user.role ":traqbio.config/user" %}selected{% endifequal %}>User</option>
+                        <option value=":traqbio.config/admin" {% ifequal user.role ":traqbio.config/admin" %}selected{% else %}{% ifequal user.role ":traqbio.config/configadmin" %}selected{% endifequal %}{% endifequal %}>Admin</option>
                     </select>
                 </div>
             </div>

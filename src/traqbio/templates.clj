@@ -18,16 +18,16 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.templates
+(ns traqbio.templates
   (:require
     [clojure.string :as str]
     [clojure.edn :as edn]
     [selmer.parser :as parser]
     [selmer.filters :as sel-filter]
     [cemerick.friend :as friend]
-    [biotraq.config :as c]
-    [biotraq.db.crud :as crud]
-    [biotraq.version :as v]))
+    [traqbio.config :as c]
+    [traqbio.db.crud :as crud]
+    [traqbio.version :as v]))
 
 ;; Filter functions for selmer (templating)
 (sel-filter/add-filter! :even (fn [counter] (even? counter)))
@@ -109,7 +109,7 @@
         page-title-link (c/page-title-link)
         develop? (c/develop?)
         admin-shutdown? (c/admin-shutdown?)]
-    (cond-> (assoc m :serverRoot root, :version (v/biotraq-version))
+    (cond-> (assoc m :serverRoot root, :version (v/traqbio-version))
       page-title (assoc :pageTitle page-title)
       page-title-link (assoc :pageTitleLink page-title-link)
       develop? (assoc :develop develop?)

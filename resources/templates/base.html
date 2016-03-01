@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% if pageTitle %}BioTraq - {{pageTitle}}{% else %}BioTraq{% endif %}</title>
+    <title>{% if pageTitle %}TraqBio - {{pageTitle}}{% else %}TraqBio{% endif %}</title>
     {% block header-scripts %}
     {% endblock %}
 
@@ -31,20 +31,20 @@
     {% endif %}
     {% if pageTitle %}
     <div class="page-header">
-    	<h1>BioTraq - {{pageTitle}}
+    	<h1>TraqBio - {{pageTitle}}
     	{% if pageTitleLink %}
     	<small><a href="{{pageTitleLink}}">webpage</small></a>
     	{% endif %}
     	</h1>
     	{% if request.isAdmin %}
-		<h5 class="text-success"><span class="glyphicon glyphicon-star"></span> BioTraq {{version}}</h5>
+		<h5 class="text-success"><span class="glyphicon glyphicon-star"></span> TraqBio {{version}}</h5>
 		{% endif %} 
     </div>
     {% endif %}
     <div id="nav-row" class="row">
         <div  class="col-md-12">
             <ul class="nav nav-pills">
-                <li {% block nav-home %}{% endblock %}><a href="{{serverRoot}}/{% if request.isAuthenticated %}timeline{% endif %}">{% if request.isAuthenticated %}Timeline{% else %}BioTraq{% endif %}</a></li>
+                <li {% block nav-home %}{% endblock %}><a href="{{serverRoot}}/{% if request.isAuthenticated %}timeline{% endif %}">{% if request.isAuthenticated %}Timeline{% else %}TraqBio{% endif %}</a></li>
                 {% if request.isAuthenticated %}
 	                <li {% block nav-prj-edit %}{% endblock %}><a href="{{serverRoot}}/prj/edit">Edit & Process</a></li>
 	                <li {% block nav-prj-view %}{% endblock %}><a href="{{serverRoot}}/prj/view">View finished</a></li>

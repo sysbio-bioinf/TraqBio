@@ -18,7 +18,7 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-(ns biotraq.routes
+(ns traqbio.routes
   (:require
     [clojure.string :as str]
     [ring.util.response :as response]
@@ -32,14 +32,14 @@
     [selmer.parser :as parser]
     [clojure.tools.logging :as log]
     [clojure.stacktrace :refer [print-cause-trace]]
-    [biotraq.templates :as templates]
-    [biotraq.api :as api]
-    [biotraq.db.crud :as db]
-    [biotraq.actions.user :as user-action]
-    [biotraq.actions.project :as project-action]
-    [biotraq.config :as c]
-    [biotraq.actions.templates :as templ-api]
-    [biotraq.runtime :as runtime])
+    [traqbio.templates :as templates]
+    [traqbio.api :as api]
+    [traqbio.db.crud :as db]
+    [traqbio.actions.user :as user-action]
+    [traqbio.actions.project :as project-action]
+    [traqbio.config :as c]
+    [traqbio.actions.templates :as templ-api]
+    [traqbio.runtime :as runtime])
   (:gen-class))
 
 

@@ -28,7 +28,7 @@
 
         var newUserSuccess = function (e) {
             var user = e;
-            user['role'] = user['role'] === ":biotraq.config/user"  ? "User" : "Admin";
+            user['role'] = user['role'] === ":traqbio.config/user"  ? "User" : "Admin";
             var message = {
                 message: "Added user " + user['username']
             };
@@ -91,7 +91,7 @@
                     table.cell('#row_'+user['username']+' .cell-email').data(user['email']);
                 }
                 if (user['role']){
-                    var role = user['role'] === ":biotraq.config/user"  ? "User" : "Admin" ;
+                    var role = user['role'] === ":traqbio.config/user"  ? "User" : "Admin" ;
                     table.cell('#row_'+user['username']+' .cell-roles').data(role);
                 }
             }

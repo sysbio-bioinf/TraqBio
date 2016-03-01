@@ -8,8 +8,8 @@ pom.xml.asc
 /.lein-*
 /.nrepl-port
 /bin
-/biotraq.conf
-/biotraq.db
+/traqbio.conf
+/traqbio.db
 # IntelliJ files
 .idea
 *.iml
