@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+      Scripting API &middot; TraqBio
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="http://sysbio-bioinf.github.io/TraqBio/public/css/poole.css">
+  <link rel="stylesheet" href="http://sysbio-bioinf.github.io/TraqBio/public/css/syntax.css">
+  <link rel="stylesheet" href="http://sysbio-bioinf.github.io/TraqBio/public/css/hyde.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  <!-- Icons -->
+  <link rel="shortcut icon" href="http://sysbio-bioinf.github.io/TraqBio/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="theme-base-0d">
+
+    <div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>
+        <a href="http://sysbio-bioinf.github.io/TraqBio/">
+          TraqBio
+        </a>
+      </h1>
+      <p class="lead">Flexible progress tracking for core unit projects</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      
+      <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/">Home</a>
+
+      
+
+      
+      
+        
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/demo/">Demo</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/setup/">Setup</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/server/">Linux Server</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item active" href="http://sysbio-bioinf.github.io/TraqBio/pages/scriptapi/">Scripting API</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/license/">License</a>
+          
+        
+      
+
+      <a class="sidebar-nav-item" href="https://github.com/sysbio-bioinf/TraqBio/archive/v1.3.6.zip">Download</a>
+      <a class="sidebar-nav-item" href="https://github.com/sysbio-bioinf/TraqBio">GitHub project</a>
+      <span class="sidebar-nav-item">Current version: 1.3.6</span>      
+    </nav>
+
+    <p>&copy; 2016. All rights reserved.</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+      <div class="page">
+  <h1 class="page-title">Scripting API</h1>
+  <p>This page describes the Scripting API of TraqBio which can be used by external programs to interact via TraqBio.
+This API is still <strong>work in progress</strong>.
+Currently, the available operations allow the implementation of automated work steps in projects.</p>
+
+<p>The Scripting API is implemented as a RESTful web service.
+Hence, external programs are not required to run on the TraqBio server and can be implemented in any programming language.</p>
+
+<p>The programs must use a valid TraqBio user account.
+It is recommended to create a dedicated account so that changes of the program can be traced in the <em>timeline view</em> of TraqBio.</p>
+
+<ul id="markdown-toc">
+  <li><a href="#operations" id="markdown-toc-operations">Operations</a>    <ul>
+      <li><a href="#login" id="markdown-toc-login">Login</a></li>
+      <li><a href="#list-projects" id="markdown-toc-list-projects">List Projects</a></li>
+      <li><a href="#query-active-project-step" id="markdown-toc-query-active-project-step">Query Active Project Step</a></li>
+      <li><a href="#download-sample-sheet" id="markdown-toc-download-sample-sheet">Download Sample Sheet</a></li>
+      <li><a href="#finish-project-step" id="markdown-toc-finish-project-step">Finish Project Step</a></li>
+    </ul>
+  </li>
+  <li><a href="#complete-example" id="markdown-toc-complete-example">Complete Example</a></li>
+</ul>
+
+<h2 id="operations">Operations</h2>
+
+<p>This section describes the available operations in general and provides usage examples for shell scripts.
+In the shell script examples the program <code class="highlighter-rouge">curl</code> and the variable <code class="highlighter-rouge">$OPTS</code> will be used:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="c"># use -k only if a self-signed certificate is used</span>
+<span class="nv">OPTS</span><span class="o">=</span><span class="s2">"-f -s -k -b cookies.txt -c cookies.txt"</span>
+</code></pre>
+</div>
+
+<p>The <code class="highlighter-rouge">cookies.txt</code> is used to keep session information between the single invocations of <code class="highlighter-rouge">curl</code>.
+It is assumed that your TraqBio instance is accessible at <code class="highlighter-rouge">https://traqbio.your.domain.tld</code> (<a href="http://sysbio-bioinf.github.io/TraqBio/pages/server#traqbio-as-subdomain">TraqBio as Subdomain</a>).
+The <a href="http://sysbio-bioinf.github.io/TraqBio/pages/server#traqbio-as-subdirectory">TraqBio as Subdirectory</a> and <a href="http://sysbio-bioinf.github.io/TraqBio/pages/server#traqbio-standalone">TraqBio Standalone</a> setups work analogously.</p>
+
+<h3 id="login">Login</h3>
+
+<p>First a program is required to post a login request:</p>
+
+<blockquote>
+  <p>POST https://traqbio.your.domain.tld/login?username=<strong>USER</strong>&amp;password=<strong>PW</strong></p>
+</blockquote>
+
+<p>Provided that the user accout name is stored in <code class="highlighter-rouge">$USER</code> and the password in <code class="highlighter-rouge">$PW</code> a login request via <code class="highlighter-rouge">curl</code> looks as follows:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code>curl <span class="nv">$OPTS</span> <span class="s2">"https://traqbio.your.domain.tld/login"</span> -X POST --data-urlencode <span class="s2">"username=</span><span class="nv">$USER</span><span class="s2">"</span> --data-urlencode <span class="s2">"password=</span><span class="nv">$PW</span><span class="s2">"</span>
+</code></pre>
+</div>
+
+<p>After a successful login the session will be stored in the <code class="highlighter-rouge">cookies.txt</code> as specified in <code class="highlighter-rouge">$OPTS</code> and used for every subsequent call.</p>
+
+<h3 id="list-projects">List Projects</h3>
+
+<p>The list of active projects can be read with the following request:</p>
+
+<blockquote>
+  <p>GET https://traqbio.your.domain.tld/api/active-project-list</p>
+</blockquote>
+
+<p>This returns a list of project ids separated with a <em>newline character</em> <code class="highlighter-rouge">\n</code>.</p>
+
+<p>The <code class="highlighter-rouge">curl</code> invocation is the following:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code>curl <span class="nv">$OPTS</span> <span class="s2">"https://traqbio.your.domain.tld/api/active-project-list"</span>
+</code></pre>
+</div>
+
+<h3 id="query-active-project-step">Query Active Project Step</h3>
+
+<p>The query wether a given project step <code class="highlighter-rouge">STEPNAME</code> of a given project id <code class="highlighter-rouge">PID</code> is currently the active step that needs to be worked on is done via this request:</p>
+
+<blockquote>
+  <p>GET https://traqbio.your.domain.tld/api/project/<strong>PID</strong>/is-active-step?name=<strong>STEPNAME</strong></p>
+</blockquote>
+
+<p>If the step is the active step of the project, then its id will be returned.
+Otherwise, it will return an error.</p>
+
+<p>With <code class="highlighter-rouge">curl</code> the invocation is the following:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code>curl <span class="nv">$OPTS</span> <span class="s2">"https://traqbio.your.domain.tld/api/project/</span><span class="nv">$PID</span><span class="s2">/is-active-step"</span> -G --data-urlencode <span class="s2">"name=</span><span class="nv">$STEPNAME</span><span class="s2">"</span>
+</code></pre>
+</div>
+<p>The error message in the case where step <code class="highlighter-rouge">$STEPNAME</code> is not the active step of project <code class="highlighter-rouge">$PID</code> is shown on the standard output when <code class="highlighter-rouge">-f</code> is removed from the options <code class="highlighter-rouge">$OPTS</code> passed to <code class="highlighter-rouge">curl</code>.</p>
+
+<h3 id="download-sample-sheet">Download Sample Sheet</h3>
+
+<p>The sample sheet of a project <code class="highlighter-rouge">PID</code> can be downloaded with the following request:</p>
+
+<blockquote>
+  <p>GET https://traqbio.your.domain.tld/api/project/<strong>PID</strong>/sample-sheet</p>
+</blockquote>
+
+<p>The sample sheet download with <code class="highlighter-rouge">curl</code> into a file <code class="highlighter-rouge">samplesheet.csv</code> is done as follows:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code>curl <span class="nv">$OPTS</span> <span class="s2">"https://traqbio.your.domain.tld/api/project/</span><span class="nv">$PID</span><span class="s2">/sample-sheet"</span> -o samplesheet.csv
+</code></pre>
+</div>
+
+<p>If there is no sample sheet in the given project, then no file will be downloaded.
+The error message will be shown, when <code class="highlighter-rouge">-f</code> and <code class="highlighter-rouge">-o samplesheet.csv</code> are removed from the <code class="highlighter-rouge">curl</code> invocation.</p>
+
+<h3 id="finish-project-step">Finish Project Step</h3>
+
+<p>A project step <code class="highlighter-rouge">STEPID</code> of a project <code class="highlighter-rouge">PID</code> can be marked as finished via this request:</p>
+
+<blockquote>
+  <p>POST “https://traqbio.your.domain.tld/api/project/<strong>PID</strong>/finish-step/<strong>STEPID</strong></p>
+</blockquote>
+
+<p>Furthermore, the attributes of that work step might be changed as well.</p>
+
+<blockquote>
+  <p>POST “https://traqbio.your.domain.tld/api/project/<strong>PID</strong>/finish-step/<strong>STEPID</strong>?description=<strong>DESCR</strong>&amp;freetext=<strong>TEXT</strong>&amp;advisor=<strong>ADVISOR</strong></p>
+</blockquote>
+
+<p>To finish a step and modify its attributes, the following <code class="highlighter-rouge">curl</code> invocation can be used:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code>curl <span class="nv">$OPTS</span> -X POST <span class="s2">"https://traqbio.your.domain.tld/api/project/</span><span class="nv">$PID</span><span class="s2">/finish-step/</span><span class="nv">$STEPID</span><span class="s2">"</span> --data-urlencode <span class="s2">"description=</span><span class="nv">$DESCR</span><span class="s2">"</span> --data-urlencode <span class="s2">"freetext=</span><span class="nv">$TEXT</span><span class="s2">"</span> --data-urlencode <span class="s2">"advisor=</span><span class="nv">$ADVISOR</span><span class="s2">"</span>
+</code></pre>
+</div>
+
+<h2 id="complete-example">Complete Example</h2>
+
+<p>The exemplary shell script <a href="https://raw.githubusercontent.com/sysbio-bioinf/TraqBio/master/tools/api-script.sh">api-script.sh</a>
+shows the general layout of an automated work step using the Scripting API:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="c">#!/bin/sh</span>
+
+<span class="nv">SERVER</span><span class="o">=</span><span class="s2">"https://localhost:8443"</span>
+<span class="nv">USERNAME</span><span class="o">=</span><span class="s2">"gv"</span>
+<span class="nv">PASSWORD</span><span class="o">=</span><span class="s2">"gv"</span>
+
+<span class="c"># use -k only if a self-signed certificate is used</span>
+<span class="nv">OPTS</span><span class="o">=</span><span class="s2">"-f -s -k -b cookies.txt -c cookies.txt"</span>
+
+<span class="nv">STEPNAME</span><span class="o">=</span><span class="s2">"S4 D"</span>
+<span class="nv">SAMPLESHEET</span><span class="o">=</span><span class="s2">"samplesheet.csv"</span>
+
+<span class="c"># login</span>
+curl <span class="nv">$OPTS</span> <span class="s2">"</span><span class="nv">$SERVER</span><span class="s2">/login"</span> -X POST --data-urlencode <span class="s2">"username=</span><span class="nv">$USERNAME</span><span class="s2">"</span> --data-urlencode <span class="s2">"password=</span><span class="nv">$PASSWORD</span><span class="s2">"</span>
+
+<span class="k">for </span>pid <span class="k">in</span> <span class="k">$(</span>curl <span class="nv">$OPTS</span> <span class="s2">"</span><span class="nv">$SERVER</span><span class="s2">/api/active-project-list"</span><span class="k">)</span>
+<span class="k">do
+	</span><span class="nb">echo</span> <span class="s2">"Active project:"</span> <span class="nv">$pid</span>
+	
+	<span class="c"># detect whether the step with the specified name is the active step</span>
+	
+	<span class="nv">stepid</span><span class="o">=</span><span class="k">$(</span>curl <span class="nv">$OPTS</span> <span class="s2">"</span><span class="nv">$SERVER</span><span class="s2">/api/project/</span><span class="nv">$pid</span><span class="s2">/is-active-step"</span> -G --data-urlencode <span class="s2">"name=</span><span class="nv">$STEPNAME</span><span class="s2">"</span><span class="k">)</span>
+	<span class="nv">result</span><span class="o">=</span><span class="nv">$?</span>
+	<span class="k">if</span> <span class="o">[</span> <span class="nv">$result</span> -ne 0 <span class="o">]</span>
+	<span class="k">then
+		</span><span class="nb">echo</span> <span class="s2">"Step </span><span class="se">\"</span><span class="nv">$STEPNAME</span><span class="se">\"</span><span class="s2"> is not the active step of project </span><span class="nv">$pid</span><span class="s2">."</span>
+		<span class="k">continue
+	fi
+	
+	</span><span class="nb">echo</span> <span class="s2">"Active step </span><span class="se">\"</span><span class="nv">$STEPNAME</span><span class="se">\"</span><span class="s2"> of project </span><span class="nv">$pid</span><span class="s2"> has id </span><span class="nv">$stepid</span><span class="s2">."</span>
+	
+	<span class="c"># get sample sheet</span>
+	
+	curl <span class="nv">$OPTS</span> <span class="s2">"</span><span class="nv">$SERVER</span><span class="s2">/api/project/</span><span class="nv">$pid</span><span class="s2">/sample-sheet"</span> -f -o <span class="nv">$SAMPLESHEET</span>
+	<span class="nv">result</span><span class="o">=</span><span class="nv">$?</span>
+	
+	<span class="k">if</span> <span class="o">[</span> <span class="nv">$result</span> -ne 0 <span class="o">]</span>
+	<span class="k">then
+		</span><span class="nb">echo</span> <span class="s2">"Project </span><span class="nv">$pid</span><span class="s2"> has no sample sheet."</span>
+		
+		<span class="c"># we decide to continue if there is no sample sheet</span>
+		<span class="k">continue 
+	fi
+	
+	</span><span class="nb">echo</span> <span class="s2">"Sample sheet downloaded to </span><span class="nv">$SAMPLESHEET</span><span class="s2">."</span>
+	
+	<span class="c"># do some analysis based on sample sheet</span>
+	
+	<span class="c"># on success finish the active step</span>
+	
+	curl <span class="nv">$OPTS</span> -X POST <span class="s2">"</span><span class="nv">$SERVER</span><span class="s2">/api/project/</span><span class="nv">$pid</span><span class="s2">/finish-step/</span><span class="nv">$stepid</span><span class="s2">"</span> --data-urlencode <span class="s2">"description=Sophisticated analysis"</span> --data-urlencode <span class="s2">"freetext=Done. Results are available at ...."</span> --data-urlencode <span class="s2">"advisor=John Doe"</span>
+	<span class="nv">result</span><span class="o">=</span><span class="nv">$?</span>
+	
+	<span class="k">if</span> <span class="o">[</span> <span class="nv">$result</span> -ne 0 <span class="o">]</span>
+	<span class="k">then
+		</span><span class="nb">echo</span> <span class="s2">"Marking step </span><span class="nv">$stepid</span><span class="s2"> of project </span><span class="nv">$pid</span><span class="s2"> as finished failed!"</span>
+	<span class="k">else
+		</span><span class="nb">echo</span> <span class="s2">"Step </span><span class="nv">$stepid</span><span class="s2"> of project </span><span class="nv">$pid</span><span class="s2"> has been marked as finished!"</span>
+	<span class="k">fi	
+done</span>
+</code></pre>
+</div>
+
+
+</div>
+
+    </div>
+
+  </body>
+</html>

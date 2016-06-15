@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+      Setup &middot; TraqBio
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="http://sysbio-bioinf.github.io/TraqBio/public/css/poole.css">
+  <link rel="stylesheet" href="http://sysbio-bioinf.github.io/TraqBio/public/css/syntax.css">
+  <link rel="stylesheet" href="http://sysbio-bioinf.github.io/TraqBio/public/css/hyde.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  <!-- Icons -->
+  <link rel="shortcut icon" href="http://sysbio-bioinf.github.io/TraqBio/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="theme-base-0d">
+
+    <div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>
+        <a href="http://sysbio-bioinf.github.io/TraqBio/">
+          TraqBio
+        </a>
+      </h1>
+      <p class="lead">Flexible progress tracking for core unit projects</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      
+      <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/">Home</a>
+
+      
+
+      
+      
+        
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/demo/">Demo</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item active" href="http://sysbio-bioinf.github.io/TraqBio/pages/setup/">Setup</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/server/">Linux Server</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/scriptapi/">Scripting API</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/license/">License</a>
+          
+        
+      
+
+      <a class="sidebar-nav-item" href="https://github.com/sysbio-bioinf/TraqBio/archive/v1.3.6.zip">Download</a>
+      <a class="sidebar-nav-item" href="https://github.com/sysbio-bioinf/TraqBio">GitHub project</a>
+      <span class="sidebar-nav-item">Current version: 1.3.6</span>      
+    </nav>
+
+    <p>&copy; 2016. All rights reserved.</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+      <div class="page">
+  <h1 class="page-title">Setup</h1>
+  <p>This page contains the information needed for permanent setup of TraqBio.
+The documentation is written for Linux servers since these represent the majority of servers.
+The setup steps can be adapted for Windows servers.</p>
+
+<ul id="markdown-toc">
+  <li><a href="#prerequisites" id="markdown-toc-prerequisites">Prerequisites</a></li>
+  <li><a href="#initialisation-and-startup" id="markdown-toc-initialisation-and-startup">Initialisation and Startup</a></li>
+  <li><a href="#configuration" id="markdown-toc-configuration">Configuration</a>    <ul>
+      <li><a href="#general-settings" id="markdown-toc-general-settings">General Settings</a></li>
+      <li><a href="#server-settings" id="markdown-toc-server-settings">Server Settings</a></li>
+      <li><a href="#e-mail-settings" id="markdown-toc-e-mail-settings">E-mail Settings</a></li>
+      <li><a href="#notification-settings" id="markdown-toc-notification-settings">Notification Settings</a>        <ul>
+          <li><a href="#general-notification-settings" id="markdown-toc-general-notification-settings">General Notification Settings</a></li>
+          <li><a href="#templates-and-placeholders" id="markdown-toc-templates-and-placeholders">Templates and Placeholders</a></li>
+        </ul>
+      </li>
+      <li><a href="#default-configuration" id="markdown-toc-default-configuration">Default Configuration</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>(In case you only want to try out TraqBio quickly see <a href="http://sysbio-bioinf.github.io/TraqBio/pages/demo">Demo</a>.)</p>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<p class="information">TraqBio has been tested with Java 7 and Java 8. <br />
+We recommended to use <strong>Java 8</strong>.</p>
+
+<p>TraqBio should be run with Transport Layer Security (TLS).
+Hence, a digital certificate for the intended domain of your TraqBio server is required.
+If you run TraqBio on a server that is already used as web server with <em>https</em>,
+you’ll be able to use its certificate (<a href="https://docs.oracle.com/javase/tutorial/security/toolsign/rstep2.html">jks import</a>).
+Otherwise you either need to get a certificate (from a commercial vendor or <a href="https://letsencrypt.org/">Let’s Encrypt</a>)
+or create a certificate and sign it yourself.
+The latter is done for the <a href="http://sysbio-bioinf.github.io/TraqBio/pages/demo">Demo</a> setup.
+The keystore.jks in the project repository has been generated as follows:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>keytool -genkey -keyalg RSA -alias selfsigned -keystore keystore.jks -storepass password -validity 365 -keysize 2048
+</code></pre>
+</div>
+
+<p>A self-signed certificate has the disadvantage that the users are warned by their web browsers that their connection is not secure.
+Hence, this should only be used for test setups.</p>
+
+<h2 id="initialisation-and-startup">Initialisation and Startup</h2>
+
+<p>TraqBio is intialized via <code class="highlighter-rouge">java -jar traqbio-1.3.6.jar init</code> which allows the following parameters:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>java -jar traqbio-1.3.6.jar init -h
+Initialise the TraqBio instance.
+
+  -a, --admin NAME           admin       Name of the admin user
+  -p, --password SECRET      traqbio     Admins password
+  -d, --data-base-name NAME  traqbio.db  Name of the database. TraqBio will not override a existing database file.
+  -t, --template-file NAME               Path to file with a initial <span class="nb">set </span>of templates.
+  -h, --help
+</code></pre>
+</div>
+
+<dl>
+  <dt><code class="highlighter-rouge">--admin</code></dt>
+  <dd>login name of the admin account</dd>
+  <dt><code class="highlighter-rouge">--password</code></dt>
+  <dd>password of the admin account</dd>
+  <dt><code class="highlighter-rouge">--data-base-name</code></dt>
+  <dd>filename of the TraqBio database to create (existing databases are not overriden)</dd>
+  <dt><code class="highlighter-rouge">--template-file</code></dt>
+  <dd>filename of a file containing template definitions which shall be imported into the initial database</dd>
+</dl>
+
+<p>The init call will create the TraqBio database with the default or specified administrator user and a default configuration file.
+The configuration file should be adjusted to the concrete usage scenario.</p>
+
+<p>After the intialisation TraqBio is started as follows:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>java -jar target/traqbio-1.3.6.jar run
+TraqBio started - Server listening on:
+http://localhost:8000
+https://localhost:8443
+</code></pre>
+</div>
+
+<p>The default configuration will start TraqBio only on the localhost – to be able to access the server remotely the server settings need to be adjusted.</p>
+
+<p>To use different configuration files, you can specify the configuration to use as follows:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>java -jar target/traqbio-1.3.6.jar run -c another-traqbio.conf
+</code></pre>
+</div>
+
+<h2 id="configuration">Configuration</h2>
+
+<p>The TraqBio configuration file allows customisation for different setup scenarios.
+The configuration file contains a Clojure map to specify the various settings.
+Consider the following short excerpt from the default configuration:</p>
+
+<div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="no">:server-config</span><span class="w">
+ </span><span class="p">{</span><span class="no">:host</span><span class="w"> </span><span class="s">"localhost"</span><span class="n">,</span><span class="w">
+  </span><span class="no">:port</span><span class="w"> </span><span class="mi">8000</span><span class="p">}</span><span class="n">,</span><span class="w">
+
+ </span><span class="no">:data-base-name</span><span class="w"> </span><span class="s">"traqbio.db"</span><span class="w">
+ </span><span class="n">...</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<p>Each map is started by <code class="highlighter-rouge"><span class="p">{</span></code> and ended by <code class="highlighter-rouge">}</code>.
+Settings are specified by keywords such as <code class="highlighter-rouge">:port</code> followed by a value such as <code class="highlighter-rouge">8000</code>.
+Keywords also identify configuration for subcomponents of TraqBio, e.g. the server configuration <code class="highlighter-rouge">:server-config</code>.</p>
+
+<h3 id="general-settings">General Settings</h3>
+
+<p>TraqBio offers the following general settings for customization:</p>
+
+<div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w"> </span><span class="n">...</span><span class="w">
+ </span><span class="no">:data-base-name</span><span class="w"> </span><span class="s">"traqbio.db"</span><span class="w">
+ </span><span class="no">:upload-path</span><span class="w"> </span><span class="s">"uploads/"</span><span class="n">,</span><span class="w">
+
+ </span><span class="no">:log-level</span><span class="w"> </span><span class="no">:info,</span><span class="w">
+ </span><span class="no">:log-file</span><span class="w"> </span><span class="s">"traqbio.log"</span><span class="n">,</span><span class="w">
+
+ </span><span class="no">:admin-shutdown?</span><span class="w"> </span><span class="n">true,</span><span class="w">
+
+ </span><span class="no">:page-title</span><span class="w"> </span><span class="s">"Your Core Unit"</span><span class="n">,</span><span class="w">
+ </span><span class="no">:page-title-link</span><span class="w"> </span><span class="s">"http://your.core.unit.com"</span><span class="n">,</span><span class="w">
+ 
+ </span><span class="n">...</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<p>The effect of these settings is described in the following.</p>
+
+<dl>
+  <dt><code class="highlighter-rouge">:data-base-name</code></dt>
+  <dd>path to the database that TraqBio uses to store all account and project data.</dd>
+  <dt><code class="highlighter-rouge">:upload-path</code></dt>
+  <dd>path to the root directory where the project attachments “order form” and “sample sheet” are stored.</dd>
+  <dt><code class="highlighter-rouge">:page-title</code></dt>
+  <dd>specifies the shown title of TraqBio. You can use the name of your core unit here.</dd>
+  <dt><code class="highlighter-rouge">:page-title-link</code></dt>
+  <dd>specifies a link that is shown besides the page title. You can specify the link to the web page of your core unit here.</dd>
+  <dt><code class="highlighter-rouge">:log-level</code></dt>
+  <dd>specifies how much information is written into the log file. Possible values: <code class="highlighter-rouge">:trace</code>, <code class="highlighter-rouge">:debug</code>, <code class="highlighter-rouge">:info</code>, <code class="highlighter-rouge">:warn</code>, <code class="highlighter-rouge">:error</code>, <code class="highlighter-rouge">:fatal</code></dd>
+  <dt><code class="highlighter-rouge">:log-file</code></dt>
+  <dd>path to the the log file.</dd>
+  <dt><code class="highlighter-rouge">:admin-shutdown?</code></dt>
+  <dd>enables or disables the shutdown button for the administrator account in the web interface.</dd>
+</dl>
+
+<h3 id="server-settings">Server Settings</h3>
+
+<p>TraqBio ships with a built-in web server (<a href="http://www.eclipse.org/jetty/">Jetty</a>).
+There are two setup scenarios for TraqBio:</p>
+
+<ol>
+  <li>TraqBio standalone</li>
+  <li>TraqBio behind proxy</li>
+</ol>
+
+<p>This section explains the server related settings in general.
+The two setups for a linux server are described in <a href="http://sysbio-bioinf.github.io/TraqBio/pages/server">Linux server</a>.</p>
+
+<p>The following listing shows the relevant server settings.
+Other settings together with a short description can be found in the <a href="https://ring-clojure.github.io/ring/ring.adapter.jetty.html">ring library documentation</a>.</p>
+
+<div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="no">:server-config</span><span class="w">
+ </span><span class="p">{</span><span class="no">:host</span><span class="w"> </span><span class="s">"localhost"</span><span class="n">,</span><span class="w">
+  </span><span class="no">:port</span><span class="w"> </span><span class="mi">8000</span><span class="n">,</span><span class="w">
+  </span><span class="no">:server-root</span><span class="w"> </span><span class="s">""</span><span class="n">,</span><span class="w">
+
+  </span><span class="no">:proxy-url</span><span class="w"> </span><span class="n">nil,</span><span class="w">
+  </span><span class="no">:forwarded?</span><span class="w"> </span><span class="n">false,</span><span class="w">
+
+  </span><span class="no">:ssl?</span><span class="w"> </span><span class="n">true,</span><span class="w">
+  </span><span class="no">:ssl-port</span><span class="w"> </span><span class="mi">8443</span><span class="n">,</span><span class="w">
+  </span><span class="no">:keystore</span><span class="w"> </span><span class="s">"keystore.jks"</span><span class="n">,</span><span class="w">
+  </span><span class="no">:key-password</span><span class="w"> </span><span class="s">"password"</span><span class="p">}</span><span class="n">,</span><span class="w">
+ </span><span class="n">...</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<p>The server settings are located in the <code class="highlighter-rouge">:server-config</code>.
+The following properties are used:</p>
+
+<dl>
+  <dt><code class="highlighter-rouge">:host</code></dt>
+  <dd>specifies the network interface to which the web server binds.
+The host is also used for the generation of links to TraqBio pages.
+Use <code class="highlighter-rouge">"localhost"</code> for access from the local computer.
+Use the domain name or IP of the network interface that connects to the internet for remote access.</dd>
+  <dt><code class="highlighter-rouge">:port</code></dt>
+  <dd>specifies the port on which the web server will listen.</dd>
+  <dt><code class="highlighter-rouge">:server-root</code></dt>
+  <dd>specfies the prefix path under which the TraqBio server pages are available, e.g. <code class="highlighter-rouge">"traqbio"</code> when TraqBio is run at <code class="highlighter-rouge">your.domain.tld/traqbio</code></dd>
+  <dt><code class="highlighter-rouge">:proxy-url</code></dt>
+  <dd>When TraqBio is used behind a proxy, you need to specify the URL under which TraqBio is accessible at the proxy.</dd>
+  <dt><code class="highlighter-rouge">:forwarded?</code></dt>
+  <dd>When TraqBio is used behind a proxy, you need to set this to <code class="highlighter-rouge">true</code>. Otherwise, keep <code class="highlighter-rouge">false</code>.</dd>
+  <dt><code class="highlighter-rouge">:ssl?</code></dt>
+  <dd>enables or disables transport encryption (aka “https”).</dd>
+  <dt><code class="highlighter-rouge">:ssl-port</code></dt>
+  <dd>specifies the port used for encrypted communication.</dd>
+  <dt><code class="highlighter-rouge">:keystore</code></dt>
+  <dd>specified the filename of the keystore that contains the certificate for the transport encryption.</dd>
+  <dt><code class="highlighter-rouge">:key-password</code></dt>
+  <dd>specifies the password needed to access the keystore (if any).</dd>
+</dl>
+
+<h3 id="e-mail-settings">E-mail Settings</h3>
+
+<p>E-mail notification is enabled by specifying <code class="highlighter-rouge">:send-mail? true</code> in the <code class="highlighter-rouge">:mail-config</code> map.
+The displayed sender of the e-mail is specified via the <code class="highlighter-rouge">:from</code> setting.
+The following example configures TLS encrypted access to the mail server of Ulm University for a user “John Smith” with user account “jsmith”.</p>
+
+<div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w"> </span><span class="n">...</span><span class="w">
+ </span><span class="no">:mail-config</span><span class="w">
+ </span><span class="p">{</span><span class="no">:send-mail?</span><span class="w"> </span><span class="n">true,</span><span class="w">
+  </span><span class="no">:from</span><span class="w"> </span><span class="s">"john.smith@uni-ulm.de"</span><span class="n">,</span><span class="w">
+  </span><span class="no">:host-config</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+   </span><span class="no">:host</span><span class="w"> </span><span class="s">"mail.uni-ulm.de"</span><span class="n">,</span><span class="w">
+   </span><span class="no">:port</span><span class="w"> </span><span class="mi">587</span><span class="n">,</span><span class="w">
+   </span><span class="no">:tls</span><span class="w"> </span><span class="no">:yes,</span><span class="w">
+   </span><span class="no">:user</span><span class="w"> </span><span class="s">"jsmith"</span><span class="n">,</span><span class="w">
+   </span><span class="no">:pass</span><span class="w"> </span><span class="s">"secret"</span><span class="p">}</span><span class="n">,</span><span class="w">
+  </span><span class="n">...</span><span class="w"> </span><span class="p">}</span><span class="w">
+ </span><span class="n">...</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<p>The e-mail server configuration is located in the <code class="highlighter-rouge">:host-config</code>.
+The following properties are needed for an encrypted connection to the e-mail server:</p>
+
+<dl>
+  <dt><code class="highlighter-rouge">:host</code></dt>
+  <dd>address (URL or IP) of the e-mail server</dd>
+  <dt><code class="highlighter-rouge">:port</code></dt>
+  <dd>port of the e-mail server. Encrypted and plaintext connection setups usually have different ports. Consult your e-mail provider for details.</dd>
+  <dt><code class="highlighter-rouge">:tls</code></dt>
+  <dd>enable or disable TLS encryption (<code class="highlighter-rouge">:yes</code> or `:no’)</dd>
+  <dt><code class="highlighter-rouge">:user</code></dt>
+  <dd>user account at the e-mail server</dd>
+  <dt><code class="highlighter-rouge">:pass</code></dt>
+  <dd>password of the e-mail user account</dd>
+</dl>
+
+<h3 id="notification-settings">Notification Settings</h3>
+
+<p>TraqBio sends notification e-mails to the customers on project creation.
+When enabled in the configuration, customers also receive notification e-mails after the completion of work steps in their projects.
+Core unit staff can be added as CC to those e-mails.
+In addition to that individual staff members can be set up to be notified in separate e-mails on work step completion.</p>
+
+<h4 id="general-notification-settings">General Notification Settings</h4>
+
+<div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w"> </span><span class="n">...</span><span class="w">
+ </span><span class="no">:mail-config</span><span class="w">
+ </span><span class="p">{</span><span class="no">:send-mail?</span><span class="w"> </span><span class="n">true,</span><span class="w">
+  </span><span class="no">:host-config</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">...</span><span class="w"> </span><span class="p">}</span><span class="n">,</span><span class="w">
+  </span><span class="no">:cc-notified-staff?</span><span class="w"> </span><span class="n">true,</span><span class="w">
+  </span><span class="no">:project-creation</span><span class="w">
+  </span><span class="p">{</span><span class="no">:staff</span><span class="w">
+   </span><span class="p">{</span><span class="no">:body</span><span class="w"> </span><span class="n">project-creation-staff-message,</span><span class="w">
+    </span><span class="no">:subject</span><span class="w"> </span><span class="s">"Project {{projectnumber}} has been created"</span><span class="p">}</span><span class="n">,</span><span class="w">
+   </span><span class="no">:customer</span><span class="w">
+   </span><span class="p">{</span><span class="no">:body</span><span class="w"> </span><span class="n">project-creation-customer-message,</span><span class="w">
+    </span><span class="no">:subject</span><span class="w"> </span><span class="s">"{{projectnumber}} Sample Registration at the YOUR LAB"</span><span class="p">}}</span><span class="n">,</span><span class="w">
+  </span><span class="no">:project-progress</span><span class="w">
+  </span><span class="p">{</span><span class="no">:staff</span><span class="w">
+   </span><span class="p">{</span><span class="no">:body</span><span class="w"> </span><span class="n">project-progress-staff-message,</span><span class="w">
+    </span><span class="no">:subject</span><span class="w"> </span><span class="s">"Progress update of project {{projectnumber}}"</span><span class="p">}</span><span class="n">,</span><span class="w">   
+   </span><span class="no">:customer</span><span class="w">
+   </span><span class="p">{</span><span class="no">:body</span><span class="w"> </span><span class="n">project-progress-customer-message,</span><span class="w">
+    </span><span class="no">:subject</span><span class="w"> </span><span class="s">"Progress update of project {{projectnumber}}"</span><span class="p">}}}</span><span class="w">
+ </span><span class="n">...</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<p>The notification messages for the two events <code class="highlighter-rouge">:project-creation</code> and <code class="highlighter-rouge">:project-progress</code> can be adjusted to your needs by specifying
+templates for the <code class="highlighter-rouge">:subject</code> and the <code class="highlighter-rouge">:body</code> of the e-mail.
+You can specify different templates for <code class="highlighter-rouge">:staff</code> and <code class="highlighter-rouge">:customers</code> since you might choose to provide additional information
+for your staff, e.g. a direct link to be able to edit the project.</p>
+
+<h4 id="templates-and-placeholders">Templates and Placeholders</h4>
+
+<p>The <code class="highlighter-rouge">:body</code> templates are stored in separate variables such as <code class="highlighter-rouge">project-creation-staff-message</code> for better readability of the configuration.
+Such a template is defined before the configuration map as in the following example.</p>
+
+<div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="p">(</span><span class="k">def</span><span class="w"> </span><span class="n">project-progress-staff-message</span><span class="w">
+</span><span class="s">"Dear {{staffname}},
+
+project {{projectnumber}} for customer {% if customername %}{{customername}} ({{customeremail}}){% else %}{{customeremail}}{% endif %} has been updated.
+
+{{progressinfo}}
+
+You can access the project for modifications via the following link:
+{{editlink}}
+
+The tracking view is available via the following link:
+{{trackinglink}}
+
+Yours sincerely,
+             YOUR NAME
+"</span><span class="p">)</span><span class="w">
+</span></code></pre>
+</div>
+
+<p>As shown in the example above you can even use simple conditions in the template.
+In this example the customer name is only inserted in the message, provided that it is known.</p>
+
+<div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="s">"{% if customername %}{{customername}} ({{customeremail}}){% else %}{{customeremail}}{% endif %}"</span><span class="w">
+</span></code></pre>
+</div>
+
+<p>Both, <code class="highlighter-rouge">:subject</code> and <code class="highlighter-rouge">:body</code> templates, can use the following placeholders which are filled in by TraqBio:</p>
+
+<dl>
+  <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{projectnumber</span><span class="p">}</span><span class="err">}</span></code></dt>
+  <dd>the project number which identifies the project</dd>
+  <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{description</span><span class="p">}</span><span class="err">}</span></code></dt>
+  <dd>the description text of the project</dd>
+  <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{advisor</span><span class="p">}</span><span class="err">}</span></code></dt>
+  <dd>the advisor of the project</dd>
+  <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{trackingnr</span><span class="p">}</span><span class="err">}</span></code></dt>
+  <dd>the tracking number of the project</dd>
+  <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{trackinglink</span><span class="p">}</span><span class="err">}</span></code></dt>
+  <dd>the tracking link of the project (must be included in the project creation message)</dd>
+  <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{editlink</span><span class="p">}</span><span class="err">}</span></code></dt>
+  <dd>the link to the edit page of the project for staff notifications</dd>
+  <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{dateofreceipt</span><span class="p">}</span><span class="err">}</span></code></dt>
+  <dd>the date of the project creation</dd>
+  <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{progressinfo</span><span class="p">}</span><span class="err">}</span></code></dt>
+  <dd>detail information of the project progress (only in progress notification)</dd>
+  <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{customername</span><span class="p">}</span><span class="err">}</span></code> or <code class="highlighter-rouge"><span class="p">{</span><span class="err">{staffname</span><span class="p">}</span><span class="err">}</span></code></dt>
+  <dd>the name of the addressed customer or staff member (depending on the message)</dd>
+  <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{customeremail</span><span class="p">}</span><span class="err">}</span></code> or <code class="highlighter-rouge"><span class="p">{</span><span class="err">{staffemail</span><span class="p">}</span><span class="err">}</span></code></dt>
+  <dd>the e-mail address of the customer or staff member (depending on the message)</dd>
+  <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{flowcellnr</span><span class="p">}</span><span class="err">}</span></code></dt>
+  <dd>the flow cell number associated with the project (if any)</dd>
+</dl>
+
+<h3 id="default-configuration">Default Configuration</h3>
+
+<p>The following listing shows the default configuration of TraqBio as generated via the initialisation.</p>
+
+<div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="c1">; message template for progress notification to staff
+</span><span class="p">(</span><span class="k">def</span><span class="w"> </span><span class="n">project-progress-staff-message</span><span class="w">
+</span><span class="s">"Dear {{staffname}},
+
+project {{projectnumber}} for customer {% if customername %}{{customername}} ({{customeremail}}){% else %}{{customeremail}}{% endif %} has been updated.
+
+{{progressinfo}}
+
+You can access the project for modifications via the following link:
+{{editlink}}
+
+The tracking view is available via the following link:
+{{trackinglink}}
+
+Yours sincerely,
+             YOUR NAME
+"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1">; message template for progress notification to customer
+</span><span class="p">(</span><span class="k">def</span><span class="w"> </span><span class="n">project-progress-customer-message</span><span class="w">
+</span><span class="s">"Dear {{customername}},
+
+project {{projectnumber}} has been updated.
+
+{{progressinfo}}
+
+You can access additional information using the following link:
+{{trackinglink}}
+
+Yours sincerely,
+             YOUR NAME
+"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1">; message template for project creation notification to staff
+</span><span class="p">(</span><span class="k">def</span><span class="w"> </span><span class="n">project-creation-staff-message</span><span class="w">
+</span><span class="s">"Dear {{staffname}},
+
+Project {{projectnumber}} has been created for customer {% if customername %}{{customername}} ({{customeremail}}){% else %}{{customeremail}}{% endif %}.
+You have been registered for notification e-mails about the progess of this project.
+
+You can access the project for modifications via the following link:
+{{editlink}}
+
+The tracking view is available via the following link:
+{{trackinglink}}
+
+Yours sincerely,
+             YOUR NAME
+"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1">; message template for project creation notification to customer
+</span><span class="p">(</span><span class="k">def</span><span class="w"> </span><span class="n">project-creation-customer-message</span><span class="w">
+</span><span class="s">"Dear {{customername}},
+
+You recieve this e-mail because you have registered a project at the YOUR LAB.
+
+You can track the progress of your samples through the various steps performed via the following link:
+{{trackinglink}}
+
+This e-mail was automatically generated by TraqBio, a sample tracking tool developed by the Research Group for Bioinformatics &amp; Systems Biology, headed by Prof. Dr. Hans A. Kestler.
+
+Yours sincerely,
+             YOUR NAME
+"</span><span class="p">)</span><span class="w">
+
+</span><span class="p">{</span><span class="c1">; mostly Jetty config (see: https://ring-clojure.github.io/ring/ring.adapter.jetty.html ) 
+</span><span class="w"> </span><span class="no">:server-config</span><span class="w">
+ </span><span class="p">{</span><span class="c1">; prefix directory for all TraqBio URLs (routes)
+</span><span class="w">  </span><span class="no">:server-root</span><span class="w"> </span><span class="s">""</span><span class="n">,</span><span class="w">
+  </span><span class="c1">; hostname of the proxying server, e.g. via Apache
+</span><span class="w">  </span><span class="no">:proxy-url</span><span class="w"> </span><span class="n">nil,</span><span class="w">
+  </span><span class="c1">; set to true, if a proxy is used
+</span><span class="w">  </span><span class="no">:forwarded?</span><span class="w"> </span><span class="n">false,</span><span class="w">
+  </span><span class="c1">; TraqBio host (for remote access, e.g. biotraq.your.domain.tld)
+</span><span class="w">  </span><span class="no">:host</span><span class="w"> </span><span class="s">"localhost"</span><span class="n">,</span><span class="w">
+  </span><span class="c1">; TraqBio port
+</span><span class="w">  </span><span class="no">:port</span><span class="w"> </span><span class="mi">8000</span><span class="n">,</span><span class="w">
+  </span><span class="c1">; enable/disable https
+</span><span class="w">  </span><span class="no">:ssl?</span><span class="w"> </span><span class="n">true,</span><span class="w">
+  </span><span class="c1">; TraqBio ssl port for https
+</span><span class="w">  </span><span class="no">:ssl-port</span><span class="w"> </span><span class="mi">8443</span><span class="n">,</span><span class="w">
+  </span><span class="c1">; keystore file and password
+</span><span class="w">  </span><span class="no">:keystore</span><span class="w"> </span><span class="s">"keystore.jks"</span><span class="n">,</span><span class="w">
+  </span><span class="no">:key-password</span><span class="w"> </span><span class="s">"password"</span><span class="p">}</span><span class="n">,</span><span class="w">
+
+ </span><span class="c1">; Upload path for sample sheets and order forms. TraqBio needs write permission for
+</span><span class="w"> </span><span class="c1">; this folder. TraqBio will create subfolders for every project.
+</span><span class="w"> </span><span class="no">:upload-path</span><span class="w"> </span><span class="s">"uploads/"</span><span class="n">,</span><span class="w">
+ </span><span class="c1">; filename of SQLite database
+</span><span class="w"> </span><span class="no">:data-base-name</span><span class="w"> </span><span class="s">"traqbio.db"</span><span class="w">
+
+ </span><span class="c1">; logging setup
+</span><span class="w"> </span><span class="no">:log-level</span><span class="w"> </span><span class="no">:info,</span><span class="w">
+ </span><span class="no">:log-file</span><span class="w"> </span><span class="s">"traqbio.log"</span><span class="n">,</span><span class="w">
+ </span><span class="c1">; allow the TraqBio admin to shut down TraqBio from the web interface
+</span><span class="w"> </span><span class="no">:admin-shutdown?</span><span class="w"> </span><span class="n">true,</span><span class="w">
+
+ </span><span class="c1">; Branding
+</span><span class="w"> </span><span class="c1">; page title to display
+</span><span class="w"> </span><span class="no">:page-title</span><span class="w"> </span><span class="s">"Your Core Unit"</span><span class="n">,</span><span class="w">
+ </span><span class="c1">; link to an external website to render beside the page title
+</span><span class="w"> </span><span class="no">:page-title-link</span><span class="w"> </span><span class="s">"http://your.core.unit.com"</span><span class="n">,</span><span class="w">
+
+ </span><span class="c1">; e-mail configuration (see https://github.com/drewr/postal for detailed information)
+</span><span class="w"> </span><span class="no">:mail-config</span><span class="w">
+ </span><span class="p">{</span><span class="no">:host-config</span><span class="w">
+  </span><span class="p">{</span><span class="c1">; mail server URL of e-mail provider
+</span><span class="w">   </span><span class="no">:host</span><span class="w"> </span><span class="s">"mail.uni-ulm.de"</span><span class="n">,</span><span class="w">
+   </span><span class="c1">; port at mail server (TLS port in this case)
+</span><span class="w">   </span><span class="no">:port</span><span class="w"> </span><span class="mi">587</span><span class="n">,</span><span class="w">
+   </span><span class="c1">; enable/disable encryption (encryption strongly recommended)
+</span><span class="w">   </span><span class="no">:tls</span><span class="w"> </span><span class="no">:yes,</span><span class="w">
+   </span><span class="c1">; e-mail account username
+</span><span class="w">   </span><span class="no">:user</span><span class="w"> </span><span class="s">"jsmith"</span><span class="n">,</span><span class="w">
+   </span><span class="c1">; e-mail account password
+</span><span class="w">   </span><span class="no">:pass</span><span class="w"> </span><span class="s">"secret"</span><span class="p">}</span><span class="n">,</span><span class="w">
+  </span><span class="c1">; visible sender e-mail address in TraqBio notification e-mails
+</span><span class="w">  </span><span class="no">:from</span><span class="w"> </span><span class="s">"john.smith@uni-ulm.de"</span><span class="n">,</span><span class="w">
+  </span><span class="c1">; e-mail templates for project creation notification
+</span><span class="w">  </span><span class="no">:project-creation</span><span class="w">
+  </span><span class="p">{</span><span class="c1">; template for notifying the staff
+</span><span class="w">   </span><span class="no">:staff</span><span class="w">
+   </span><span class="p">{</span><span class="no">:body</span><span class="w"> </span><span class="n">project-creation-staff-message,</span><span class="w">
+    </span><span class="no">:subject</span><span class="w"> </span><span class="s">"Project {{projectnumber}} has been created"</span><span class="p">}</span><span class="n">,</span><span class="w">
+   </span><span class="c1">; template for notifying the customer
+</span><span class="w">   </span><span class="no">:customer</span><span class="w">
+   </span><span class="p">{</span><span class="no">:body</span><span class="w"> </span><span class="n">project-creation-customer-message,</span><span class="w">
+    </span><span class="no">:subject</span><span class="w"> </span><span class="s">"{{projectnumber}} Sample Registration at the YOUR LAB"</span><span class="p">}}</span><span class="n">,</span><span class="w">
+  </span><span class="c1">; e-mail templates for project progress notification 
+</span><span class="w">  </span><span class="no">:project-progress</span><span class="w">
+  </span><span class="p">{</span><span class="c1">; template for notifying the staff
+</span><span class="w">   </span><span class="no">:staff</span><span class="w">
+   </span><span class="p">{</span><span class="no">:body</span><span class="w"> </span><span class="n">project-progress-staff-message,</span><span class="w">
+    </span><span class="no">:subject</span><span class="w"> </span><span class="s">"Progress update of project {{projectnumber}}"</span><span class="p">}</span><span class="n">,</span><span class="w">
+   </span><span class="c1">; template for notifying the customer
+</span><span class="w">   </span><span class="no">:customer</span><span class="w">
+   </span><span class="p">{</span><span class="no">:body</span><span class="w"> </span><span class="n">project-progress-customer-message,</span><span class="w">
+    </span><span class="no">:subject</span><span class="w"> </span><span class="s">"Progress update of project {{projectnumber}}"</span><span class="p">}}</span><span class="n">,</span><span class="w">
+  </span><span class="c1">; enable/disable email CC to notified staff for customer notifications
+</span><span class="w">  </span><span class="no">:cc-notified-staff?</span><span class="w"> </span><span class="n">false,</span><span class="w">
+  </span><span class="c1">; Set this flag to false to deactivate the e-mail notification.
+</span><span class="w">  </span><span class="c1">; You can skip the remaining :mail-config in this case.
+</span><span class="w">  </span><span class="no">:send-mail?</span><span class="w"> </span><span class="n">false</span><span class="p">}}</span><span class="w">
+</span></code></pre>
+</div>
+
+
+</div>
+
+    </div>
+
+  </body>
+</html>

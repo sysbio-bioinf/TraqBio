@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+      Linux Server &middot; TraqBio
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="http://sysbio-bioinf.github.io/TraqBio/public/css/poole.css">
+  <link rel="stylesheet" href="http://sysbio-bioinf.github.io/TraqBio/public/css/syntax.css">
+  <link rel="stylesheet" href="http://sysbio-bioinf.github.io/TraqBio/public/css/hyde.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  <!-- Icons -->
+  <link rel="shortcut icon" href="http://sysbio-bioinf.github.io/TraqBio/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="theme-base-0d">
+
+    <div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>
+        <a href="http://sysbio-bioinf.github.io/TraqBio/">
+          TraqBio
+        </a>
+      </h1>
+      <p class="lead">Flexible progress tracking for core unit projects</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      
+      <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/">Home</a>
+
+      
+
+      
+      
+        
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/demo/">Demo</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/setup/">Setup</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item active" href="http://sysbio-bioinf.github.io/TraqBio/pages/server/">Linux Server</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/scriptapi/">Scripting API</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/license/">License</a>
+          
+        
+      
+
+      <a class="sidebar-nav-item" href="https://github.com/sysbio-bioinf/TraqBio/archive/v1.3.6.zip">Download</a>
+      <a class="sidebar-nav-item" href="https://github.com/sysbio-bioinf/TraqBio">GitHub project</a>
+      <span class="sidebar-nav-item">Current version: 1.3.6</span>      
+    </nav>
+
+    <p>&copy; 2016. All rights reserved.</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+      <div class="page">
+  <h1 class="page-title">Linux Server</h1>
+  <p>This section explains a fully featured setup on a Linux server with automatic startup of TraqBio when the server is rebooted.
+There are two setup scenarios for TraqBio:</p>
+
+<ol>
+  <li>TraqBio standalone</li>
+  <li>TraqBio behind proxy</li>
+</ol>
+
+<p>A similar setup is possible on windows servers as well, though the means to achieve it are different.</p>
+
+<ul id="markdown-toc">
+  <li><a href="#automatic-startup" id="markdown-toc-automatic-startup">Automatic Startup</a></li>
+  <li><a href="#traqbio-standalone" id="markdown-toc-traqbio-standalone">TraqBio Standalone</a></li>
+  <li><a href="#traqbio-behind-proxy" id="markdown-toc-traqbio-behind-proxy">TraqBio behind Proxy</a>    <ul>
+      <li><a href="#traqbio-as-subdomain" id="markdown-toc-traqbio-as-subdomain">TraqBio as Subdomain</a></li>
+      <li><a href="#traqbio-as-subdirectory" id="markdown-toc-traqbio-as-subdirectory">TraqBio as Subdirectory</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="automatic-startup">Automatic Startup</h2>
+
+<p>TraqBio can be installed as a daemon on Linux via using the init script <a href="https://raw.githubusercontent.com/sysbio-bioinf/TraqBio/master/tools/traqbio">traqbio</a> (root privileges on the server are required).
+Modify the settings in the init script appropriately and copy it to <code class="highlighter-rouge">/etc/init.d/</code>.
+The settings section of the init script looks as follows:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="c">## TraqBio settings</span>
+
+<span class="nv">VERSION</span><span class="o">=</span><span class="s2">"1.3.6"</span>
+<span class="nv">INSTALL_DIR</span><span class="o">=</span><span class="s2">"/home/youruser/traqbio"</span>
+<span class="nv">CONFIG</span><span class="o">=</span><span class="s2">"traqbio.conf"</span>
+<span class="nv">OPTS</span><span class="o">=</span><span class="s2">""</span>
+
+<span class="c">## Linux user and group for TraqBio process</span>
+<span class="nv">RUN_AS_USER</span><span class="o">=</span><span class="s2">"traqbio"</span>
+<span class="nv">RUN_AS_GROUP</span><span class="o">=</span><span class="s2">"traqbio"</span>
+
+<span class="c">## memory settings for the JVM</span>
+<span class="nv">MIN_MEMORY</span><span class="o">=</span><span class="s2">"256M"</span>
+<span class="nv">MAX_MEMORY</span><span class="o">=</span><span class="s2">"512M"</span>
+</code></pre>
+</div>
+
+<p>Set the install directory <code class="highlighter-rouge">INSTALL_DIR</code> to the one where you copied the TraqBio jar file and initialized the database.
+If you choose a different configuration name, you will have to adjust the variable <code class="highlighter-rouge">CONFIG</code> appropriately.
+It is recommended to create a user account dedicated to run TraqBio.
+In the example above a user account <code class="highlighter-rouge">traqbio</code> with group <code class="highlighter-rouge">traqbio</code> is used.
+The minimal and maximal memory that is used by the JVM can be adjusted to your usage scenario.</p>
+
+<p>After copying the init script <code class="highlighter-rouge">traqbio</code> to <code class="highlighter-rouge">/etc/init.d/traqbio</code> you can configure the automatic startup on server boot
+via the operating system tools, e.g.  <code class="highlighter-rouge">rcconf</code>.
+Manual start, stop and restart is possible via the following:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code>/etc/init.d/traqbio start
+/etc/init.d/traqbio stop
+/etc/init.d/traqbio restart
+</code></pre>
+</div>
+
+<h2 id="traqbio-standalone">TraqBio Standalone</h2>
+
+<p>For the standalone scenario only the init script needs to be setup as described in the Section <a href="automatic-startup">Automatic Startup</a>.
+The <code class="highlighter-rouge">:server-config</code> in the configuration file should set the port to <code class="highlighter-rouge">80</code>, the ssl port to <code class="highlighter-rouge">442</code> and the domain name of your server as host.</p>
+
+<div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="no">:server-config</span><span class="w">
+ </span><span class="p">{</span><span class="no">:host</span><span class="w"> </span><span class="s">"your.domain.tld"</span><span class="n">,</span><span class="w">
+  </span><span class="no">:port</span><span class="w"> </span><span class="mi">80</span><span class="n">,</span><span class="w">
+  </span><span class="no">:ssl?</span><span class="w"> </span><span class="n">true,</span><span class="w">
+  </span><span class="no">:ssl-port</span><span class="w"> </span><span class="mi">443</span><span class="n">,</span><span class="w">
+  </span><span class="n">...</span><span class="w"> </span><span class="p">}</span><span class="n">,</span><span class="w">
+ </span><span class="n">...</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h2 id="traqbio-behind-proxy">TraqBio behind Proxy</h2>
+
+<p>This section describes the TraqBio setup using <a href="https://httpd.apache.org/">Apache</a> as proxy.
+In the proxy scenario the transport encryption is provided by Apache such that transport encryption is disabled in TraqBio.
+Therefore, the init script setup from Section <a href="automatic-startup">Automatic Startup</a> should be performed in advance.</p>
+
+<p>We describe two possibilities to use Apache as a proxy for TraqBio:</p>
+
+<ol>
+  <li>TraqBio as a subdomain of your domain (virtual host).</li>
+  <li>TraqBio as a subdirectory.</li>
+</ol>
+
+<h3 id="traqbio-as-subdomain">TraqBio as Subdomain</h3>
+
+<p>To setup TraqBio to use a subdomain of your domain (virtual host),
+you need to have a virtual host definition in <code class="highlighter-rouge">/etc/apache2/sites-available/traqbio</code> like the following:</p>
+
+<div class="language-apache highlighter-rouge"><pre class="highlight"><code><span class="nc">ProxyRequests</span> Off
+<span class="nc">ProxyPreserveHost</span> On
+
+<span class="p">&lt;</span><span class="nl">VirtualHost</span><span class="sr"> *:80</span><span class="p">&gt;
+</span>  <span class="nc">ServerName</span> traqbio.your.domain.tld
+  <span class="nc">Redirect</span> <span class="ss">permanent</span> / https://traqbio.your.domain.tld/
+<span class="p">&lt;/</span><span class="nl">VirtualHost</span><span class="p">&gt;
+</span>
+
+<span class="p">&lt;</span><span class="nl">VirtualHost</span><span class="sr"> *:443</span><span class="p">&gt;
+</span>  <span class="nc">ServerName</span> traqbio.your.domain.tld
+
+  <span class="nc">SSLEngine</span> On
+  <span class="nc">SSLProxyEngine</span> On
+  <span class="nc">SSLProxyVerify</span> <span class="ss">none</span>
+  <span class="nc">SSLCertificateFile</span> /path/to/certificate.crt
+  <span class="nc">SSLCertificateKeyFile</span> /path/to/keyfile.key
+
+  <span class="nc">ProxyPass</span> / http://localhost:TRAQBIO-PORT/
+  <span class="nc">ProxyPassReverse</span> / http://localhost:TRAQBIO-PORT/
+  <span class="nc">RequestHeader</span> <span class="ss">set</span> X-Forwarded-Proto "https"
+  <span class="nc">ErrorLog</span> /var/log/apache2/traqbio.log
+  <span class="nc">CustomLog</span> /var/log/apache2/traqbio.log common
+<span class="p">&lt;/</span><span class="nl">VirtualHost</span><span class="p">&gt;
+</span></code></pre>
+</div>
+
+<p>This sets up a a virtual host <code class="highlighter-rouge">traqbio.your.domain.tld</code> on your domain <code class="highlighter-rouge">your.domain.tld</code> using transport encryption.
+The virtual host is forwarded to the chosen port <code class="highlighter-rouge">TRAQBIO-PORT</code> on <code class="highlighter-rouge">localhost</code> which TraqBio listens to.
+The paths to the certificate file <code class="highlighter-rouge">/path/to/certificate.crt</code> and the certificate key file <code class="highlighter-rouge">/path/to/keyfile.key</code> 
+must be filled in according to your server configuration.
+The <code class="highlighter-rouge">:server-config</code> of the TraqBio configuration has to look like:</p>
+
+<div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="no">:server-config</span><span class="w">
+ </span><span class="p">{</span><span class="no">:host</span><span class="w"> </span><span class="s">"localhost"</span><span class="n">,</span><span class="w">
+  </span><span class="no">:port</span><span class="w"> </span><span class="n">TRAQBIO-PORT,</span><span class="w">
+  </span><span class="no">:server-root</span><span class="w"> </span><span class="s">""</span><span class="n">,</span><span class="w">
+
+  </span><span class="no">:proxy-url</span><span class="w"> </span><span class="s">"traqbio.your.domain.tld"</span><span class="n">,</span><span class="w">
+  </span><span class="no">:forwarded?</span><span class="w"> </span><span class="n">true,</span><span class="w">
+
+  </span><span class="no">:ssl?</span><span class="w"> </span><span class="n">false</span><span class="p">}</span><span class="n">,</span><span class="w">
+ </span><span class="n">...</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="traqbio-as-subdirectory">TraqBio as Subdirectory</h3>
+
+<p>To setup TraqBio to use a subdirectory of your domain, you need to add the following to your existing virtual host:</p>
+
+<div class="language-apache highlighter-rouge"><pre class="highlight"><code><span class="p">&lt;</span><span class="nl">Location</span><span class="sr"> /traqbio</span><span class="p">&gt;
+</span>  <span class="nc">ProxyPass</span>        http://localhost:TRAQBIO-PORT/traqbio
+  <span class="nc">ProxyPassReverse</span> http://localhost:TRAQBIO-PORT/traqbio
+<span class="p">&lt;/</span><span class="nl">Location</span><span class="p">&gt;
+</span></code></pre>
+</div>
+
+<p>You have to fill in <code class="highlighter-rouge">TRAQBIO-PORT</code> with the port you specified in your TraqBio configuration file.
+You also need to specify <code class="highlighter-rouge">ProxyRequests Off</code> and <code class="highlighter-rouge">ProxyPreserveHost On</code> before the existing virtual host, e.g.</p>
+
+<div class="language-apache highlighter-rouge"><pre class="highlight"><code><span class="nc">ProxyRequests</span> Off
+<span class="nc">ProxyPreserveHost</span> On
+
+<span class="p">&lt;</span><span class="nl">VirtualHost</span><span class="sr"> *:443</span><span class="p">&gt;
+</span>  <span class="nc">ServerName</span> your.domain.tld
+  
+  <span class="err">...</span>
+  
+  <span class="p">&lt;</span><span class="nl">Location</span><span class="sr"> /traqbio</span><span class="p">&gt;
+</span>    <span class="nc">ProxyPass</span>        http://localhost:TRAQBIO-PORT/traqbio
+    <span class="nc">ProxyPassReverse</span> http://localhost:TRAQBIO-PORT/traqbio
+  <span class="p">&lt;/</span><span class="nl">Location</span><span class="p">&gt;
+&lt;/</span><span class="nl">VirtualHost</span><span class="p">&gt;
+</span></code></pre>
+</div>
+
+<p>This sets up a directory <code class="highlighter-rouge">traqbio</code> on your domain <code class="highlighter-rouge">your.domain.tld</code> such that TraqBio is accessible via <code class="highlighter-rouge">your.domain.tld/traqbio</code>.
+The directory <code class="highlighter-rouge">traqbio</code> of the virtual host is forwarded to the chosen port <code class="highlighter-rouge">TRAQBIO-PORT</code> on <code class="highlighter-rouge">localhost</code> which TraqBio listens to.
+The <code class="highlighter-rouge">:server-config</code> of the TraqBio configuration has to look like:</p>
+
+<div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="no">:server-config</span><span class="w">
+ </span><span class="p">{</span><span class="no">:host</span><span class="w"> </span><span class="s">"localhost"</span><span class="n">,</span><span class="w">
+  </span><span class="no">:port</span><span class="w"> </span><span class="n">TRAQBIO-PORT,</span><span class="w">
+  </span><span class="no">:server-root</span><span class="w"> </span><span class="s">"traqbio"</span><span class="n">,</span><span class="w">
+
+  </span><span class="no">:proxy-url</span><span class="w"> </span><span class="s">"your.domain.tld"</span><span class="n">,</span><span class="w">
+  </span><span class="no">:forwarded?</span><span class="w"> </span><span class="n">true,</span><span class="w">
+
+  </span><span class="no">:ssl?</span><span class="w"> </span><span class="n">false</span><span class="p">}</span><span class="n">,</span><span class="w">
+ </span><span class="n">...</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+</div>
+
+    </div>
+
+  </body>
+</html>
