@@ -69,7 +69,7 @@
 (defn now
   []
   (let [today (-> (Calendar/getInstance) .getTime)
-        dateformat (SimpleDateFormat. "dd.MM.YYYY HH:mm")]
+        dateformat (SimpleDateFormat. "dd.MM.yyyy HH:mm")]
     (-> dateformat (.format today))))
 
 

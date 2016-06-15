@@ -75,7 +75,7 @@
      :default "admin"]
     ["-p" "--password SECRET" "Admins password"
      :default "traqbio"]
-    ["-d" "--data-base-name NAME" "Name of the database. Traqseq will not ovveride a existing database file."
+    ["-d" "--data-base-name NAME" "Name of the database. TraqBio will not override a existing database file."
      :default "traqbio.db"]
     ["-t" "--template-file NAME" "Path to file with a initial set of templates."]
     ["-h" "--help"]

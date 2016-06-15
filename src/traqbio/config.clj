@@ -103,7 +103,6 @@ Yours sincerely,
      :upload-path "uploads/"
      :server-config ^:replace {:port 8000
                                :host "localhost"
-                               :join? false
                                :ssl? true
                                :ssl-port 8443
                                :forwarded? false

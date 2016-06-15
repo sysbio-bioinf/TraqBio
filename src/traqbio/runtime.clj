@@ -45,11 +45,14 @@
 (defn use-only-tls
   "For security reasons use only TLSv1.1 and TLSv1.2."
   [^Server jetty]
-  (let [protocols (into-array String ["TLSv1.1" "TLSv1.2"])]
+  (let [allowed-protocols (into-array String ["TLSv1.1" "TLSv1.2"])
+        forbidden-protocols (into-array String ["SSLv3" "TLSv1"])]
     (doseq [^SslSelectChannelConnector con (->> jetty
                                              .getConnectors
                                              (filter #(instance? SslSelectChannelConnector %)))]
-      (.setIncludeProtocols (.getSslContextFactory con) protocols))))
+      (doto (.getSslContextFactory con)
+        (.setIncludeProtocols allowed-protocols)
+        (.setExcludeProtocols forbidden-protocols)))))
 
 
 (defn use-forwarding
@@ -78,7 +81,7 @@
   [app]
   (when-not running-server
     (alter-var-root #'keep-running (constantly true))
-    (let [{:keys [ssl?, forwarded?] :as config} (c/server-config),
+    (let [{:keys [ssl?, forwarded?] :as config} (-> (c/server-config) (assoc :join? false)),
           server (jetty/run-jetty
                    app
                    (cond-> config

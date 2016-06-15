@@ -11,7 +11,7 @@
 
 ## TraqBio settings
 
-VERSION="1.0.0"
+VERSION="1.3.6"
 INSTALL_DIR="/home/youruser/traqbio"
 CONFIG="traqbio.conf"
 OPTS=""
