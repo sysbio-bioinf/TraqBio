@@ -1,0 +1,74 @@
+---
+layout: default
+title: Home
+---
+
+<h1 class="main-title">{{ site.title }}</h1>
+<h2 class="main-subtitle">{{ site.description }}</h2>
+
+
+
+<div>
+<p>
+TraqBio is a intuitively useable and a readily implementable open-source web application for progress
+tracking in core units.
+Its main intention is the communication of projects status between a core unit and its users.
+</p>
+<img src="/images/Timeline.png"/>
+</div>
+
+<div>
+TraqBio is developed at the <a href="http://sysbio.uni-ulm.de">Institute of Medical Systems Biology</a> at Ulm University.
+TraqBio is distributed under the <a href="/_pages/license">MIT license</a>.
+</div>
+
+
+<div>
+<h2>Features</h2>
+<ul>
+  <li>Project progress tracking akin to tracking of parcel deliveries</li>
+  <li>Customisable e-mail notification of users and staff</li>
+  <li>Simple, modular and highly flexible project concept
+    <ul class="sublist">
+      <li>Sequence of work packages</li>
+      <li>*Ad hoc* workflow modifications of running projects</li>
+      <li>Project templates</li>
+      <li>Archive of completed projects</li>
+    </ul>
+  </li>
+  <li>Account-less user access to progress information pages
+    <ul class="sublist">
+      <li>Tracking links via e-mail notification</li>
+      <li>Information about work package results</li>
+    </ul>
+  </li>
+  <li>Simple and quick demo setup</li>
+  <li>Flexible permanent setup
+    <ul class="sublist">
+      <li>Standalone application</li>
+      <li>Proxied application (integration into existing web server)</li>
+    </ul>
+  </li>
+  <li>Responsive design: well accessible from mobile devices</li>
+  <li>Timeline view for staff actions</li>
+  <li>Transport encryption</li>
+  <li>Scripting API for automated work packages (work-in-progress)</li>
+</ul>
+</div>
+
+
+<div class="posts">
+  <h2>Documentation Content</h2>
+  <ul>
+    {% assign pages_list = site.pages | sort:"position" %}
+    {% for node in pages_list %}
+      {% if node.title != null %}
+        {% if node.layout == "page" %}
+          <li><a class="" href="{{ node.url }}">{{ node.title }}</a></li>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  </ul>
+</div>
+
+
