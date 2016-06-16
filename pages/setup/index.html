@@ -150,7 +150,7 @@ Hence, this should only be used for test setups.</p>
 
 <h2 id="initialisation-and-startup">Initialisation and Startup</h2>
 
-<p>TraqBio is intialized via <code class="highlighter-rouge">java -jar traqbio-1.3.6.jar init</code> which allows the following parameters:</p>
+<p>TraqBio is initialised via <code class="highlighter-rouge">java -jar traqbio-1.3.6.jar init</code> which allows the following parameters:</p>
 
 <div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>java -jar traqbio-1.3.6.jar init -h
 Initialise the TraqBio instance.
@@ -169,7 +169,7 @@ Initialise the TraqBio instance.
   <dt><code class="highlighter-rouge">--password</code></dt>
   <dd>password of the admin account</dd>
   <dt><code class="highlighter-rouge">--data-base-name</code></dt>
-  <dd>filename of the TraqBio database to create (existing databases are not overriden)</dd>
+  <dd>filename of the TraqBio database to create (existing databases are not overridden)</dd>
   <dt><code class="highlighter-rouge">--template-file</code></dt>
   <dd>filename of a file containing template definitions which shall be imported into the initial database</dd>
 </dl>
@@ -177,7 +177,7 @@ Initialise the TraqBio instance.
 <p>The init call will create the TraqBio database with the default or specified administrator user and a default configuration file.
 The configuration file should be adjusted to the concrete usage scenario.</p>
 
-<p>After the intialisation TraqBio is started as follows:</p>
+<p>After the initialisation TraqBio is started as follows:</p>
 
 <div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>java -jar target/traqbio-1.3.6.jar run
 TraqBio started - Server listening on:
@@ -215,7 +215,7 @@ Keywords also identify configuration for subcomponents of TraqBio, e.g. the serv
 
 <h3 id="general-settings">General Settings</h3>
 
-<p>TraqBio offers the following general settings for customization:</p>
+<p>TraqBio offers the following general settings for customisation:</p>
 
 <div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w"> </span><span class="n">...</span><span class="w">
  </span><span class="no">:data-base-name</span><span class="w"> </span><span class="s">"traqbio.db"</span><span class="w">
@@ -263,7 +263,7 @@ There are two setup scenarios for TraqBio:</p>
 </ol>
 
 <p>This section explains the server related settings in general.
-The two setups for a linux server are described in <a href="http://sysbio-bioinf.github.io/TraqBio/pages/server">Linux server</a>.</p>
+The two setups for a Linux server are described in <a href="http://sysbio-bioinf.github.io/TraqBio/pages/server">Linux server</a>.</p>
 
 <p>The following listing shows the relevant server settings.
 Other settings together with a short description can be found in the <a href="https://ring-clojure.github.io/ring/ring.adapter.jetty.html">ring library documentation</a>.</p>
@@ -296,7 +296,7 @@ Use the domain name or IP of the network interface that connects to the internet
   <dt><code class="highlighter-rouge">:port</code></dt>
   <dd>specifies the port on which the web server will listen.</dd>
   <dt><code class="highlighter-rouge">:server-root</code></dt>
-  <dd>specfies the prefix path under which the TraqBio server pages are available, e.g. <code class="highlighter-rouge">"traqbio"</code> when TraqBio is run at <code class="highlighter-rouge">your.domain.tld/traqbio</code></dd>
+  <dd>specifies the prefix path under which the TraqBio server pages are available, e.g. <code class="highlighter-rouge">"traqbio"</code> when TraqBio is run at <code class="highlighter-rouge">your.domain.tld/traqbio</code></dd>
   <dt><code class="highlighter-rouge">:proxy-url</code></dt>
   <dd>When TraqBio is used behind a proxy, you need to specify the URL under which TraqBio is accessible at the proxy.</dd>
   <dt><code class="highlighter-rouge">:forwarded?</code></dt>
@@ -486,7 +486,7 @@ Yours sincerely,
 </span><span class="s">"Dear {{staffname}},
 
 Project {{projectnumber}} has been created for customer {% if customername %}{{customername}} ({{customeremail}}){% else %}{{customeremail}}{% endif %}.
-You have been registered for notification e-mails about the progess of this project.
+You have been registered for notification e-mails about the progress of this project.
 
 You can access the project for modifications via the following link:
 {{editlink}}
@@ -502,7 +502,7 @@ Yours sincerely,
 </span><span class="p">(</span><span class="k">def</span><span class="w"> </span><span class="n">project-creation-customer-message</span><span class="w">
 </span><span class="s">"Dear {{customername}},
 
-You recieve this e-mail because you have registered a project at the YOUR LAB.
+You receive this e-mail because you have registered a project at the YOUR LAB.
 
 You can track the progress of your samples through the various steps performed via the following link:
 {{trackinglink}}

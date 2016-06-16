@@ -148,7 +148,7 @@ The <a href="http://sysbio-bioinf.github.io/TraqBio/pages/server#traqbio-as-subd
   <p>POST https://traqbio.your.domain.tld/login?username=<strong>USER</strong>&amp;password=<strong>PW</strong></p>
 </blockquote>
 
-<p>Provided that the user accout name is stored in <code class="highlighter-rouge">$USER</code> and the password in <code class="highlighter-rouge">$PW</code> a login request via <code class="highlighter-rouge">curl</code> looks as follows:</p>
+<p>Provided that the user account name is stored in <code class="highlighter-rouge">$USER</code> and the password in <code class="highlighter-rouge">$PW</code> a login request via <code class="highlighter-rouge">curl</code> looks as follows:</p>
 
 <div class="language-shell highlighter-rouge"><pre class="highlight"><code>curl <span class="nv">$OPTS</span> <span class="s2">"https://traqbio.your.domain.tld/login"</span> -X POST --data-urlencode <span class="s2">"username=</span><span class="nv">$USER</span><span class="s2">"</span> --data-urlencode <span class="s2">"password=</span><span class="nv">$PW</span><span class="s2">"</span>
 </code></pre>
@@ -174,7 +174,7 @@ The <a href="http://sysbio-bioinf.github.io/TraqBio/pages/server#traqbio-as-subd
 
 <h3 id="query-active-project-step">Query Active Project Step</h3>
 
-<p>The query wether a given project step <code class="highlighter-rouge">STEPNAME</code> of a given project id <code class="highlighter-rouge">PID</code> is currently the active step that needs to be worked on is done via this request:</p>
+<p>The query whether a given project step <code class="highlighter-rouge">STEPNAME</code> of a given project id <code class="highlighter-rouge">PID</code> is currently the active step that needs to be worked on is done via this request:</p>
 
 <blockquote>
   <p>GET https://traqbio.your.domain.tld/api/project/<strong>PID</strong>/is-active-step?name=<strong>STEPNAME</strong></p>
