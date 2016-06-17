@@ -27,6 +27,10 @@ Its main intention is the communication of projects status between a core unit a
 * Transport encryption
 * Scripting API for automated work packages (work-in-progress)
 
+**Tracking view:**
+![TraqBio Tracking View](http://sysbio-bioinf.github.io/TraqBio/images/Tracking-View.png)
+
+**Timeline view:**
 ![TraqBio Timeline View](http://sysbio-bioinf.github.io/TraqBio/images/Timeline.png)
 
 ## Demo
