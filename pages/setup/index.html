@@ -110,14 +110,17 @@ The setup steps can be adapted for Windows servers.</p>
 
 <ul id="markdown-toc">
   <li><a href="#prerequisites" id="markdown-toc-prerequisites">Prerequisites</a></li>
-  <li><a href="#initialisation-and-startup" id="markdown-toc-initialisation-and-startup">Initialisation and Startup</a></li>
+  <li><a href="#initialisation-and-startup" id="markdown-toc-initialisation-and-startup">Initialisation and Startup</a>    <ul>
+      <li><a href="#project-templates-file-format" id="markdown-toc-project-templates-file-format">Project Templates File Format</a></li>
+    </ul>
+  </li>
   <li><a href="#configuration" id="markdown-toc-configuration">Configuration</a>    <ul>
       <li><a href="#general-settings" id="markdown-toc-general-settings">General Settings</a></li>
       <li><a href="#server-settings" id="markdown-toc-server-settings">Server Settings</a></li>
       <li><a href="#e-mail-settings" id="markdown-toc-e-mail-settings">E-mail Settings</a></li>
       <li><a href="#notification-settings" id="markdown-toc-notification-settings">Notification Settings</a>        <ul>
           <li><a href="#general-notification-settings" id="markdown-toc-general-notification-settings">General Notification Settings</a></li>
-          <li><a href="#templates-and-placeholders" id="markdown-toc-templates-and-placeholders">Templates and Placeholders</a></li>
+          <li><a href="#message-templates-and-placeholders" id="markdown-toc-message-templates-and-placeholders">Message Templates and Placeholders</a></li>
         </ul>
       </li>
       <li><a href="#default-configuration" id="markdown-toc-default-configuration">Default Configuration</a></li>
@@ -171,7 +174,7 @@ Initialise the TraqBio instance.
   <dt><code class="highlighter-rouge">--data-base-name</code></dt>
   <dd>filename of the TraqBio database to create (existing databases are not overridden)</dd>
   <dt><code class="highlighter-rouge">--template-file</code></dt>
-  <dd>filename of a file containing template definitions which shall be imported into the initial database</dd>
+  <dd>filename of a file containing project template definitions which shall be imported into the initial database (see <a href="#project-templates-file-format">Project Templates File Format</a>)</dd>
 </dl>
 
 <p>The init call will create the TraqBio database with the default or specified administrator user and a default configuration file.
@@ -194,6 +197,31 @@ https://localhost:8443
 </code></pre>
 </div>
 
+<h3 id="project-templates-file-format">Project Templates File Format</h3>
+
+<p>The file format for the project template looks as follows:</p>
+
+<div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="p">[{</span><span class="no">:name</span><span class="w"> </span><span class="s">"Project Template 1"</span><span class="w">
+  </span><span class="no">:description</span><span class="w"> </span><span class="s">"Description of Template 1"</span><span class="w">
+  </span><span class="no">:templatesteps</span><span class="w">
+  </span><span class="p">[{</span><span class="no">:type</span><span class="w"> </span><span class="s">"Work package 1 (Template 1)"</span><span class="w">
+    </span><span class="no">:description</span><span class="w"> </span><span class="s">"Description of work package 1 (Template 1)"</span><span class="p">}</span><span class="w">
+   </span><span class="p">{</span><span class="no">:type</span><span class="w"> </span><span class="s">"Work package 2"</span><span class="w">
+    </span><span class="no">:description</span><span class="w"> </span><span class="s">"Description of work package 2 (Template 1)"</span><span class="p">}</span><span class="w">
+   </span><span class="n">...</span><span class="w"> </span><span class="p">]}</span><span class="w">
+ </span><span class="p">{</span><span class="no">:description</span><span class="w"> </span><span class="s">"Project Template 2"</span><span class="w">
+  </span><span class="no">:name</span><span class="w"> </span><span class="s">"Description of Template 2"</span><span class="w">
+  </span><span class="no">:templatesteps</span><span class="w">
+  </span><span class="p">[{</span><span class="no">:type</span><span class="w"> </span><span class="s">"Work package 1 (Template 2)"</span><span class="w">
+    </span><span class="no">:description</span><span class="w"> </span><span class="s">"Description of work package 1 (Template 2)"</span><span class="p">}</span><span class="w">
+   </span><span class="n">...</span><span class="w"> </span><span class="p">]}</span><span class="w">
+ </span><span class="n">...</span><span class="w"> </span><span class="p">]</span><span class="w">
+</span></code></pre>
+</div>
+
+<p>Each project template has a name (<code class="highlighter-rouge">:name</code>), a description text (<code class="highlighter-rouge">:description</code>) and a list of work packages (<code class="highlighter-rouge">:templatesteps</code>).
+Each work package has a short name (<code class="highlighter-rouge">:type</code>) and a description text (<code class="highlighter-rouge">:description</code>).</p>
+
 <h2 id="configuration">Configuration</h2>
 
 <p>The TraqBio configuration file allows customisation for different setup scenarios.
@@ -210,7 +238,7 @@ Consider the following short excerpt from the default configuration:</p>
 </div>
 
 <p>Each map is started by <code class="highlighter-rouge"><span class="p">{</span></code> and ended by <code class="highlighter-rouge">}</code>.
-Settings are specified by keywords such as <code class="highlighter-rouge">:port</code> followed by a value such as <code class="highlighter-rouge">8000</code>.
+Settings are specified as pairs of keyword and value, e.g. keywords such as <code class="highlighter-rouge">:port</code> followed by a value such as <code class="highlighter-rouge">8000</code>.
 Keywords also identify configuration for subcomponents of TraqBio, e.g. the server configuration <code class="highlighter-rouge">:server-config</code>.</p>
 
 <h3 id="general-settings">General Settings</h3>
@@ -342,7 +370,7 @@ The following properties are needed for an encrypted connection to the e-mail se
   <dt><code class="highlighter-rouge">:port</code></dt>
   <dd>port of the e-mail server. Encrypted and plaintext connection setups usually have different ports. Consult your e-mail provider for details.</dd>
   <dt><code class="highlighter-rouge">:tls</code></dt>
-  <dd>enable or disable TLS encryption (<code class="highlighter-rouge">:yes</code> or `:no’)</dd>
+  <dd>enable or disable TLS encryption (<code class="highlighter-rouge">:yes</code> or <code class="highlighter-rouge">:no</code>)</dd>
   <dt><code class="highlighter-rouge">:user</code></dt>
   <dd>user account at the e-mail server</dd>
   <dt><code class="highlighter-rouge">:pass</code></dt>
@@ -382,14 +410,14 @@ In addition to that individual staff members can be set up to be notified in sep
 </div>
 
 <p>The notification messages for the two events <code class="highlighter-rouge">:project-creation</code> and <code class="highlighter-rouge">:project-progress</code> can be adjusted to your needs by specifying
-templates for the <code class="highlighter-rouge">:subject</code> and the <code class="highlighter-rouge">:body</code> of the e-mail.
-You can specify different templates for <code class="highlighter-rouge">:staff</code> and <code class="highlighter-rouge">:customers</code> since you might choose to provide additional information
+message templates for the <code class="highlighter-rouge">:subject</code> and the <code class="highlighter-rouge">:body</code> of the e-mail.
+You can specify different message templates for <code class="highlighter-rouge">:staff</code> and <code class="highlighter-rouge">:customers</code> since you might choose to provide additional information
 for your staff, e.g. a direct link to be able to edit the project.</p>
 
-<h4 id="templates-and-placeholders">Templates and Placeholders</h4>
+<h4 id="message-templates-and-placeholders">Message Templates and Placeholders</h4>
 
-<p>The <code class="highlighter-rouge">:body</code> templates are stored in separate variables such as <code class="highlighter-rouge">project-creation-staff-message</code> for better readability of the configuration.
-Such a template is defined before the configuration map as in the following example.</p>
+<p>The message <code class="highlighter-rouge">:body</code> templates are stored in separate variables such as <code class="highlighter-rouge">project-creation-staff-message</code> for better readability of the configuration.
+Such a message template is defined before the configuration map as in the following example.</p>
 
 <div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="p">(</span><span class="k">def</span><span class="w"> </span><span class="n">project-progress-staff-message</span><span class="w">
 </span><span class="s">"Dear {{staffname}},
@@ -410,7 +438,7 @@ Yours sincerely,
 </span></code></pre>
 </div>
 
-<p>As shown in the example above you can even use simple conditions in the template.
+<p>As shown in the example above you can even use simple conditions in the message template.
 In this example the customer name is only inserted in the message, provided that it is known.</p>
 
 <div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="s">"{% if customername %}{{customername}} ({{customeremail}}){% else %}{{customeremail}}{% endif %}"</span><span class="w">

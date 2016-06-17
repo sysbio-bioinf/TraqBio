@@ -109,7 +109,12 @@ The command line code shown here indicates the entered commands by a <code class
 Lines without the prefix are output from the previous entered command.</p>
 
 <ul id="markdown-toc">
-  <li><a href="#setup" id="markdown-toc-setup">Setup</a></li>
+  <li><a href="#setup" id="markdown-toc-setup">Setup</a>    <ul>
+      <li><a href="#linux-mac" id="markdown-toc-linux-mac">Linux, Mac</a></li>
+      <li><a href="#windows" id="markdown-toc-windows">Windows</a></li>
+    </ul>
+  </li>
+  <li><a href="#traqbio-login" id="markdown-toc-traqbio-login">TraqBio Login</a></li>
   <li><a href="#enable-e-mail-notification" id="markdown-toc-enable-e-mail-notification">Enable E-mail Notification</a></li>
 </ul>
 
@@ -118,10 +123,12 @@ Lines without the prefix are output from the previous entered command.</p>
 <p class="information">TraqBio has been tested with Java 7 and Java 8. <br />
 We recommended to use <strong>Java 8</strong>.</p>
 
+<h3 id="linux-mac">Linux, Mac</h3>
+
 <p>First create a directory <code class="highlighter-rouge">traqbio-test</code>:</p>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>mkdir traqbio-test
-<span class="gp">$ </span><span class="nb">cd </span>traqbio-test
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/home/youruser$ </span>mkdir /path/to/traqbio-test
+<span class="gp">/home/youruser$ </span><span class="nb">cd</span> /path/to/traqbio-test
 </code></pre>
 </div>
 
@@ -129,35 +136,71 @@ We recommended to use <strong>Java 8</strong>.</p>
 of TraqBio and the exemplary <a href="https://github.com/sysbio-bioinf/TraqBio/raw/master/keystore.jks">keystore.jks</a> into the created <code class="highlighter-rouge">traqbio-test</code> directory.
 The files should be listed when you run the following command:</p>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>ls
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/path/to/traqbio-test$ </span>ls
 keystore.jks  traqbio-1.3.6.jar
 </code></pre>
 </div>
 
 <p>To create an initial configuration file and an initial database run the following command:</p>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>java -jar traqbio-1.3.6.jar init
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/path/to/traqbio-test$ </span>java -jar traqbio-1.3.6.jar init
 </code></pre>
 </div>
 
 <p>This command should not produce any output but creates the configuration file <code class="highlighter-rouge">traqbio.conf</code> and the database file <code class="highlighter-rouge">traqbio.db</code>.
 You can verify this as follows:</p>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>ls
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/path/to/traqbio-test$ </span>ls
 keystore.jks  traqbio-1.3.6.jar  traqbio.conf  traqbio.db
+</code></pre>
+</div>
+
+<p>Optionally, you can import the Proteomics workflows stored in <a href="https://raw.githubusercontent.com/sysbio-bioinf/TraqBio/master/proteomics.init">proteomics.init</a> file. Instead of the previous initialisation, the following initialisation is used then:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/path/to/traqbio-test$ </span>java -jar traqbio-1.3.6.jar init -t proteomics.init
 </code></pre>
 </div>
 
 <p>Finally, you can start TraqBio with:</p>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>java -jar traqbio-1.3.6.jar run
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/path/to/traqbio-test$ </span>java -jar traqbio-1.3.6.jar run
 TraqBio started - Server listening on:
 http://localhost:8000
 https://localhost:8443
 </code></pre>
 </div>
 
-<p>The output on the command line indicates that TraqBio can be accessed from a web browser under <code class="highlighter-rouge">https://localhost:8443</code>.
+<h3 id="windows">Windows</h3>
+
+<p>Create a directory <code class="highlighter-rouge">TraqBioTest</code> for the test and download the <a href="https://github.com/sysbio-bioinf/TraqBio/releases/download/v1.3.6/traqbio-1.3.6.jar">current release (1.3.6)</a>
+of TraqBio and the exemplary <a href="https://github.com/sysbio-bioinf/TraqBio/raw/master/keystore.jks">keystore.jks</a> into that directory.</p>
+
+<p>Open a command line in the <code class="highlighter-rouge">TraqBioTest</code> directory.
+To create an initial configuration file and an initial database run the following command:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">C:\path\to\TraqBioTest&gt; </span>java -jar traqbio-1.3.6.jar init
+</code></pre>
+</div>
+
+<p>This command should not produce any output but creates the configuration file <code class="highlighter-rouge">traqbio.conf</code> and the database file <code class="highlighter-rouge">traqbio.db</code>.
+Optionally, you can import the Proteomics workflows stored in <a href="https://raw.githubusercontent.com/sysbio-bioinf/TraqBio/master/proteomics.init">proteomics.init</a> file. Instead of the previous initialisation, the following initialisation is used then:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/path/to/traqbio-test$ </span>java -jar traqbio-1.3.6.jar init -t proteomics.init
+</code></pre>
+</div>
+
+<p>Finally, you can start TraqBio with:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">C:\path\to\TraqBioTest&gt; </span>java -jar traqbio-1.3.6.jar run
+TraqBio started - Server listening on:
+http://localhost:8000
+https://localhost:8443
+</code></pre>
+</div>
+
+<h2 id="traqbio-login">TraqBio Login</h2>
+
+<p>The output on the command line indicates that TraqBio can be accessed from a web browser under <a href="https://localhost:8443">https://localhost:8443</a>.
 Following the instructions for this demo, you have set up TraqBio with a self-signed certificate.
 Hence, web browsers will warn you about that (see the following screenshots).
 In Firefox and Chrome you can add a temporary exception for the certificate by clicking on <strong>Advanced</strong>.</p>
