@@ -5,6 +5,8 @@ TraqBio is a intuitively useable and a readily implementable open-source web app
 tracking in core units.
 Its main intention is the communication of projects status between a core unit and its users.
 
+TraqBio is developed at the [Institute of Medical Systems Biology](http://sysbio.uni-ulm.de/) at Ulm University.
+
 ## Features
 
 * Project progress tracking akin to tracking of parcel deliveries
