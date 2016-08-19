@@ -187,7 +187,7 @@
                                 FROM template
                                 WHERE template.id = ?" template-id] :result-set-fn first)]
     (assoc template
-      :templatesteps (sort-by :sequence (read-template-steps template-id)))))
+      :templatesteps (vec (sort-by :sequence (read-template-steps template-id))))))
 
 
 (defn- update-or-insert!

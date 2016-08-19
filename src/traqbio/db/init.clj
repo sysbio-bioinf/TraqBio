@@ -165,7 +165,8 @@
       [:error "TEXT"]
       [:action "TEXT"]
       [:type "TEXT"]
-      [:message "TEXT"])))
+      [:message "TEXT"]
+      [:projectid "INTEGER"])))
 
 
 (defn create-password-reset-table

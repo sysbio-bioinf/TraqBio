@@ -51,7 +51,7 @@
             (contains? tables table)
             (assoc! table (vec (jdbc/query db-conn [(format "SELECT * FROM %s" (name table))])))))
         (transient {})
-        [:project, :projectstep :template :templatestep :user :usernotification :actionlog]))))
+        [:project, :projectstep :template :templatestep :customer :projectcustomer :user :usernotification :passwordreset :actionlog]))))
 
 
 (defn db-connection
@@ -65,6 +65,24 @@
     (with-open [w (io/writer export-filename)]
       (binding [*out* w]
         (prn data)))))
+
+
+(defn export-templates
+  [db-filename, export-filename]
+  (let [templates-vec (do
+                        (c/update-db-name db-filename)
+                        (reduce
+                          (fn [result-vec, {:keys [id]}]
+                            (conj result-vec
+                              (-> id
+                                crud/read-template
+                                (select-keys [:name, :description, :templatesteps])
+                                (update-in [:templatesteps] (partial mapv #(select-keys % [:type, :description]))))))
+                          []
+                          (crud/read-templates)))]
+    (with-open [w (io/writer export-filename)]
+      (binding [*out* w]
+        (prn templates-vec)))))
 
 
 (defn insert-table-data

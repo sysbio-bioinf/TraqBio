@@ -128,6 +128,7 @@
     (let [{description-tmpl :description,
            message-tmpl     :message,
            error-tmpl       :error,
+           projectid-tmpl       :projectid,
            action-type      :action-type} meta-map,        
           param-result-map {:parameters param-value-map :result result, :captured captured-state}
           error? (or exception (error-response? result))]
@@ -145,6 +146,8 @@
          :args (pr-str param-value-map)}
         action-type
           (assoc :type (cond-> action-type (keyword? action-type) name))
+        projectid-tmpl
+          (assoc :projectid (render-or-execute projectid-tmpl, param-result-map, captured-state, has-captured-value?))
         error?
           (assoc :error (if exception
                           (exception-message exception)
@@ -244,7 +247,7 @@
   [name & decl]
   (let [{:keys [func-body-list, meta-map]} (process-defn-decl name, decl)
          func-body-list (mapv (partial add-logging name meta-map) func-body-list)]
-    `(defn ~(with-meta name (dissoc meta-map :capture :description :message :error :timing))
+    `(defn ~(with-meta name (dissoc meta-map :capture :description :message :error :timing :projectid))
        ~@func-body-list)))
 
 

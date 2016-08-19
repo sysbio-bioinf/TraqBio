@@ -99,6 +99,7 @@
   {:description "Project \"{{result.body.projectnumber}}\" created",
    :message project-created-message,
    :error "Project creation failed",
+   :projectid "{{result.body.projectid}}"
    :action-type :create}
   [{:keys [projectnumber] :as project}]
   (if (empty? (:customers project))
@@ -131,7 +132,7 @@
                                  (crud/user-email-addresses (:notifiedusers project)),
                                  :project-creation)))]          
           {:status 200 ; success, even on mail error since that is handled separately (otherwise the project creation would be reported as failed in the timeline)
-           :body {:trackingnr trackingNr, :trackinglink (render-tracking-link trackingNr), :projectnumber projectnumber,
+           :body {:trackingnr trackingNr, :trackinglink (render-tracking-link trackingNr), :projectnumber projectnumber, :projectid project-id
                   :customerinfos (mapv (fn [{:keys [name, email]}] (format "%s (%s)" name email)) (:customers project))}})))
 
 
@@ -329,6 +330,7 @@
   {:description "Project \"{{parameters.data.project.projectnumber}}\" updated",
    ;:capture (load-project (:id project)),
    :message project-diff,
+   :projectid "{{result.body.projectid}}"
    :error "Update of project \"{{parameters.data.project.projectnumber}}\" failed",
    :action-type :update}
   [{new-project :project, old-project :oldproject :as data}]
@@ -360,7 +362,7 @@
         ; after everything has been update sent notification (if needed and specified)
         (when (and steps-completed? (c/send-mail?))
           (future (step-completion-notification new-project, old-project)))
-        {:status 200})
+        {:status 200, :body {:projectid project-id}})
       {:status 500})))
 
 

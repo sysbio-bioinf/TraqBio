@@ -23,7 +23,7 @@
     [clojure.string :as string]
     [clojure.stacktrace :refer [print-cause-trace]]
     [clojure.java.io :as io]
-    [clojure.tools.cli :refer [parse-opts]]
+    [clojure.tools.cli :as cli]
     [clojure.tools.logging :as log]
     [ring.adapter.jetty :as jetty]
     [ring.middleware.http-response :refer [catch-response]]
@@ -98,6 +98,7 @@
         "  run              Run TraqBio"
         "  export db file   Export given database to the specified file."
         "  import db file   Import data from given file into the specified data base."
+        "  export-templates Export the template in the given database to the specified file."
         ""
         "For informations about args use:"
         "  traqbio init -h"
@@ -166,7 +167,7 @@
 (defn run
   "Run TraqBio"
   [& run-args]
-  (let [{:keys [options errors summary]} (parse-opts (first run-args) run-options)]
+  (let [{:keys [options errors summary]} (cli/parse-opts (first run-args) run-options)]
     ;; Handle help and error conditions
     (cond
       (:help options) (exit 0 (run-usage summary))
@@ -178,8 +179,9 @@
       (c/update-db-name data-base-name)      
       (when (db-exists? (:config-file options), data-base-name)
         ; Start server (query server-config atom, since default settings might be missing in the config read from the file)
-        (runtime/start-server (app (c/server-config)))
-        (runtime/shutdown-on-sigterm!)))))
+        (let [server (runtime/start-server (app (c/server-config)))]
+          (runtime/shutdown-on-sigterm!)
+          server)))))
 
 
 (defn add-sequence-number
@@ -203,7 +205,7 @@
 (defn init
   "Init TraqBio"
   [& init-args]
-  (let [{:keys [options errors summary]} (parse-opts (first init-args) init-options)]
+  (let [{:keys [options errors summary]} (cli/parse-opts (first init-args) init-options)]
     ;; Handle help and error conditions
     (cond
       (:help options) (exit 0 (init-usage summary))
@@ -227,8 +229,11 @@
   (case (first args)
     "init" (init (rest args))
     "run" (run (rest args))
+    "export-templates" (let [[db-filename, export-filename] (rest args)]
+                         (migrate/export-templates db-filename, export-filename))
     "export" (let [[db-filename, export-filename] (rest args)]
                (migrate/export-data db-filename, export-filename))
+
     "import" (let [[db-filename, import-filename] (rest args)]
                (migrate/import-data db-filename, import-filename))
     (exit 1 (app-usage))))

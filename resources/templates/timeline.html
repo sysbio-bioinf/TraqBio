@@ -22,6 +22,9 @@
 						{% if entry.message %}
 						<p>{{entry.message|linebreaks|safe}}</p>
                         {% endif %}
+                        {% if entry.projectid %}
+                        <p><a href="{{serverRoot}}/prj/edit/{{entry.projectid}}"><button type="button" class="btn btn-info btn-xs">Show project</button></a></p>
+                        {% endif %}
                     </div>
                 </div>
                 {% else %}
