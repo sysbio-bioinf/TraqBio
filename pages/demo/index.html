@@ -91,9 +91,9 @@
         
       
 
-      <a class="sidebar-nav-item" href="https://github.com/sysbio-bioinf/TraqBio/releases/download/v1.3.6/traqbio-1.3.6.jar">Download</a>
+      <a class="sidebar-nav-item" href="https://github.com/sysbio-bioinf/TraqBio/releases/download/v1.3.7/traqbio-1.3.7.jar">Download</a>
       <a class="sidebar-nav-item" href="https://github.com/sysbio-bioinf/TraqBio">GitHub project</a>
-      <span class="sidebar-nav-item">Current version: 1.3.6</span>      
+      <span class="sidebar-nav-item">Current version: 1.3.7</span>      
     </nav>
 
     <p>&copy; 2016. All rights reserved.</p>
@@ -132,18 +132,18 @@ We recommended to use <strong>Java 8</strong>.</p>
 </code></pre>
 </div>
 
-<p>Download the <a href="https://github.com/sysbio-bioinf/TraqBio/releases/download/v1.3.6/traqbio-1.3.6.jar">current release (1.3.6)</a>
+<p>Download the <a href="https://github.com/sysbio-bioinf/TraqBio/releases/download/v1.3.7/traqbio-1.3.7.jar">current release (1.3.7)</a>
 of TraqBio and the exemplary <a href="https://github.com/sysbio-bioinf/TraqBio/raw/master/keystore.jks">keystore.jks</a> into the created <code class="highlighter-rouge">traqbio-test</code> directory.
 The files should be listed when you run the following command:</p>
 
 <div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/path/to/traqbio-test$ </span>ls
-keystore.jks  traqbio-1.3.6.jar
+keystore.jks  traqbio-1.3.7.jar
 </code></pre>
 </div>
 
 <p>To create an initial configuration file and an initial database run the following command:</p>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/path/to/traqbio-test$ </span>java -jar traqbio-1.3.6.jar init
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/path/to/traqbio-test$ </span>java -jar traqbio-1.3.7.jar init
 </code></pre>
 </div>
 
@@ -151,20 +151,20 @@ keystore.jks  traqbio-1.3.6.jar
 You can verify this as follows:</p>
 
 <div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/path/to/traqbio-test$ </span>ls
-keystore.jks  traqbio-1.3.6.jar  traqbio.conf  traqbio.db
+keystore.jks  traqbio-1.3.7.jar  traqbio.conf  traqbio.db
 </code></pre>
 </div>
 
 <p>Optionally, you can import the Proteomics workflows from <a href="https://raw.githubusercontent.com/sysbio-bioinf/TraqBio/master/proteomics.init">proteomics.init</a> or the Genomics workflows from <a href="https://raw.githubusercontent.com/sysbio-bioinf/TraqBio/master/genomics.init">genomics.init</a>. 
 The template file containing the workflows needs to be specified in the initialisation then as follows:</p>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/path/to/traqbio-test$ </span>java -jar traqbio-1.3.6.jar init -t proteomics.init
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/path/to/traqbio-test$ </span>java -jar traqbio-1.3.7.jar init -t proteomics.init
 </code></pre>
 </div>
 
 <p>Finally, you can start TraqBio with:</p>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/path/to/traqbio-test$ </span>java -jar traqbio-1.3.6.jar run
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">/path/to/traqbio-test$ </span>java -jar traqbio-1.3.7.jar run
 TraqBio started - Server listening on:
 http://localhost:8000
 https://localhost:8443
@@ -173,13 +173,13 @@ https://localhost:8443
 
 <h3 id="windows">Windows</h3>
 
-<p>Create a directory <code class="highlighter-rouge">TraqBioTest</code> for the test and download the <a href="https://github.com/sysbio-bioinf/TraqBio/releases/download/v1.3.6/traqbio-1.3.6.jar">current release (1.3.6)</a>
+<p>Create a directory <code class="highlighter-rouge">TraqBioTest</code> for the test and download the <a href="https://github.com/sysbio-bioinf/TraqBio/releases/download/v1.3.7/traqbio-1.3.7.jar">current release (1.3.7)</a>
 of TraqBio and the exemplary <a href="https://github.com/sysbio-bioinf/TraqBio/raw/master/keystore.jks">keystore.jks</a> into that directory.</p>
 
 <p>Open a command line in the <code class="highlighter-rouge">TraqBioTest</code> directory.
 To create an initial configuration file and an initial database run the following command:</p>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">C:\path\to\TraqBioTest&gt; </span>java -jar traqbio-1.3.6.jar init
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">C:\path\to\TraqBioTest&gt; </span>java -jar traqbio-1.3.7.jar init
 </code></pre>
 </div>
 
@@ -187,13 +187,13 @@ To create an initial configuration file and an initial database run the followin
 Optionally, you can import the Proteomics workflows from <a href="https://raw.githubusercontent.com/sysbio-bioinf/TraqBio/master/proteomics.init">proteomics.init</a> or the Genomics workflows from <a href="https://raw.githubusercontent.com/sysbio-bioinf/TraqBio/master/genomics.init">genomics.init</a>. 
 The template file containing the workflows needs to be specified in the initialisation then as follows:</p>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">C:\path\to\TraqBioTest&gt; </span>java -jar traqbio-1.3.6.jar init -t proteomics.init
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">C:\path\to\TraqBioTest&gt; </span>java -jar traqbio-1.3.7.jar init -t proteomics.init
 </code></pre>
 </div>
 
 <p>Finally, you can start TraqBio with:</p>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">C:\path\to\TraqBioTest&gt; </span>java -jar traqbio-1.3.6.jar run
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">C:\path\to\TraqBioTest&gt; </span>java -jar traqbio-1.3.7.jar run
 TraqBio started - Server listening on:
 http://localhost:8000
 https://localhost:8443
