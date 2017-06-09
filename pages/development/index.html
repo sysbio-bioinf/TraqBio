@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+      Development &middot; TraqBio
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="http://sysbio-bioinf.github.io/TraqBio/public/css/poole.css">
+  <link rel="stylesheet" href="http://sysbio-bioinf.github.io/TraqBio/public/css/syntax.css">
+  <link rel="stylesheet" href="http://sysbio-bioinf.github.io/TraqBio/public/css/hyde.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  <!-- Icons -->
+  <link rel="shortcut icon" href="http://sysbio-bioinf.github.io/TraqBio/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="theme-base-0d">
+
+    <div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>
+        <a href="http://sysbio-bioinf.github.io/TraqBio/">
+          TraqBio
+        </a>
+      </h1>
+      <p class="lead">Flexible progress tracking for core unit projects</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      
+      <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/">Home</a>
+
+      
+
+      
+      
+        
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/demo/">Demo</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/setup/">Setup</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/server/">Linux Server</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/scriptapi/">Scripting API</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item active" href="http://sysbio-bioinf.github.io/TraqBio/pages/development/">Development</a>
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/license/">License</a>
+          
+        
+      
+
+      <a class="sidebar-nav-item" href="https://github.com/sysbio-bioinf/TraqBio/releases/download/v1.3.8/traqbio-1.3.8.jar">Download</a>
+      <a class="sidebar-nav-item" href="https://github.com/sysbio-bioinf/TraqBio">GitHub project</a>
+      <span class="sidebar-nav-item">Current version: 1.3.8</span>      
+    </nav>
+
+    <p>&copy; 2017. All rights reserved.</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+      <div class="page">
+  <h1 class="page-title">Development</h1>
+  <p>In case you want to fix a bug or extend the functionality of TraqBio this page describes how to get started.</p>
+
+<ul id="markdown-toc">
+  <li><a href="#get-the-traqbio-source-code" id="markdown-toc-get-the-traqbio-source-code">Get the TraqBio source code</a></li>
+  <li><a href="#building-traqbio" id="markdown-toc-building-traqbio">Building TraqBio</a></li>
+  <li><a href="#development" id="markdown-toc-development">Development</a></li>
+  <li><a href="#new-traqbio-features-or-bug-fixes" id="markdown-toc-new-traqbio-features-or-bug-fixes">New TraqBio features or bug fixes</a></li>
+</ul>
+
+<h2 id="get-the-traqbio-source-code">Get the TraqBio source code</h2>
+
+<p>Download the TraqBio source code via <a href="https://git-scm.com/">git</a>:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code>git clone git@github.com:sysbio-bioinf/TraqBio.git
+</code></pre>
+</div>
+
+<h2 id="building-traqbio">Building TraqBio</h2>
+
+<p>The TraqBio application can be assembled using the Clojure build tool <a href="https://leiningen.org/">Leiningen</a>.
+To install Leiningen download the <a href="https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein">lein</a> script,
+make it executable and place it on search path so that a Linux shell or the Windows command line tool can find it.
+Leiningen installs its dependencies on its first run.</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code>lein
+</code></pre>
+</div>
+
+<p>TraqBio is build by running the <code class="highlighter-rouge">uberjar</code> task of Leiningen within the TraqBio directory:</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code>lein uberjar
+</code></pre>
+</div>
+
+<p>Leiningen will download all required dependencies of TraqBio and build a jar containing the complete application in <code class="highlighter-rouge">target/traqbio-1.3.8.jar</code>.</p>
+
+<h2 id="development">Development</h2>
+
+<p>If you are new to Clojure and unsure which development environment you should use, then we recommend <a href="https://www.jetbrains.com/idea/">IntelliJ IDEA</a> with the <a href="https://cursive-ide.com/">Cursive</a> Clojure plugin.
+IntelliJ IDEA has a free community edition and Cursive has a free license “for non-commercial use, including personal hacking, open-source and student work”.</p>
+
+<p>With IntelliJ IDEA and Cursive installed, you can just open the TraqBio project and start development.
+The <a href="https://cursive-ide.com/userguide/">user guide</a> of Cursive will help you getting started.</p>
+
+<h2 id="new-traqbio-features-or-bug-fixes">New TraqBio features or bug fixes</h2>
+
+<p>We are of course interested to integrate bug fixes into TraqBio.
+So let us known about bugs on the <a href="https://github.com/sysbio-bioinf/TraqBio/issues">issue tracker</a> on Github.
+Bug fixes can be submitted as pull requests on Github.</p>
+
+<p>If you develop new features for TraqBio, you can also submit them via pull requests on Github.</p>
+
+</div>
+
+    </div>
+
+  </body>
+</html>

@@ -86,17 +86,23 @@
       
         
           
+            <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/development/">Development</a>
+          
+        
+      
+        
+          
             <a class="sidebar-nav-item" href="http://sysbio-bioinf.github.io/TraqBio/pages/license/">License</a>
           
         
       
 
-      <a class="sidebar-nav-item" href="https://github.com/sysbio-bioinf/TraqBio/releases/download/v1.3.7/traqbio-1.3.7.jar">Download</a>
+      <a class="sidebar-nav-item" href="https://github.com/sysbio-bioinf/TraqBio/releases/download/v1.3.8/traqbio-1.3.8.jar">Download</a>
       <a class="sidebar-nav-item" href="https://github.com/sysbio-bioinf/TraqBio">GitHub project</a>
-      <span class="sidebar-nav-item">Current version: 1.3.7</span>      
+      <span class="sidebar-nav-item">Current version: 1.3.8</span>      
     </nav>
 
-    <p>&copy; 2016. All rights reserved.</p>
+    <p>&copy; 2017. All rights reserved.</p>
   </div>
 </div>
 
@@ -153,9 +159,9 @@ Hence, this should only be used for test setups.</p>
 
 <h2 id="initialisation-and-startup">Initialisation and Startup</h2>
 
-<p>TraqBio is initialised via <code class="highlighter-rouge">java -jar traqbio-1.3.7.jar init</code> which allows the following parameters:</p>
+<p>TraqBio is initialised via <code class="highlighter-rouge">java -jar traqbio-1.3.8.jar init</code> which allows the following parameters:</p>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>java -jar traqbio-1.3.7.jar init -h
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>java -jar traqbio-1.3.8.jar init -h
 Initialise the TraqBio instance.
 
   -a, --admin NAME           admin       Name of the admin user
@@ -182,7 +188,7 @@ The configuration file should be adjusted to the concrete usage scenario.</p>
 
 <p>After the initialisation TraqBio is started as follows:</p>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>java -jar target/traqbio-1.3.7.jar run
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>java -jar target/traqbio-1.3.8.jar run
 TraqBio started - Server listening on:
 http://localhost:8000
 https://localhost:8443
@@ -193,7 +199,7 @@ https://localhost:8443
 
 <p>To use different configuration files, you can specify the configuration to use as follows:</p>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>java -jar target/traqbio-1.3.7.jar run -c another-traqbio.conf
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>java -jar target/traqbio-1.3.8.jar run -c another-traqbio.conf
 </code></pre>
 </div>
 
@@ -422,7 +428,7 @@ Such a message template is defined before the configuration map as in the follow
 <div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="p">(</span><span class="k">def</span><span class="w"> </span><span class="n">project-progress-staff-message</span><span class="w">
 </span><span class="s">"Dear {{staffname}},
 
-project {{projectnumber}} for customer {% if customername %}{{customername}} ({{customeremail}}){% else %}{{customeremail}}{% endif %} has been updated.
+project {{projectnumber}} for customers {{customernames}} has been updated.
 
 {{progressinfo}}
 
@@ -435,13 +441,6 @@ The tracking view is available via the following link:
 Yours sincerely,
              YOUR NAME
 "</span><span class="p">)</span><span class="w">
-</span></code></pre>
-</div>
-
-<p>As shown in the example above you can even use simple conditions in the message template.
-In this example the customer name is only inserted in the message, provided that it is known.</p>
-
-<div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="s">"{% if customername %}{{customername}} ({{customeremail}}){% else %}{{customeremail}}{% endif %}"</span><span class="w">
 </span></code></pre>
 </div>
 
@@ -467,10 +466,19 @@ In this example the customer name is only inserted in the message, provided that
   <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{customername</span><span class="p">}</span><span class="err">}</span></code> or <code class="highlighter-rouge"><span class="p">{</span><span class="err">{staffname</span><span class="p">}</span><span class="err">}</span></code></dt>
   <dd>the name of the addressed customer or staff member (depending on the message)</dd>
   <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{customeremail</span><span class="p">}</span><span class="err">}</span></code> or <code class="highlighter-rouge"><span class="p">{</span><span class="err">{staffemail</span><span class="p">}</span><span class="err">}</span></code></dt>
-  <dd>the e-mail address of the customer or staff member (depending on the message)</dd>
+  <dd>the e-mail address of the addressed customer or staff member (depending on the message)</dd>
+  <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{customernames</span><span class="p">}</span><span class="err">}</span></code></dt>
+  <dd>the names of the project customers in project notifications to staff members</dd>
   <dt><code class="highlighter-rouge"><span class="p">{</span><span class="err">{flowcellnr</span><span class="p">}</span><span class="err">}</span></code></dt>
   <dd>the flow cell number associated with the project (if any)</dd>
 </dl>
+
+<p>You can even use simple conditions in the message templates.
+In the following example the staff member name is only inserted in the message when it is known otherwise the corresponding e-mail address is inserted.</p>
+
+<div class="language-clojure highlighter-rouge"><pre class="highlight"><code><span class="s">"{% if staffname %}{{staffname}}{% else %}{{staffemail}}{% endif %}"</span><span class="w">
+</span></code></pre>
+</div>
 
 <h3 id="default-configuration">Default Configuration</h3>
 
@@ -480,7 +488,7 @@ In this example the customer name is only inserted in the message, provided that
 </span><span class="p">(</span><span class="k">def</span><span class="w"> </span><span class="n">project-progress-staff-message</span><span class="w">
 </span><span class="s">"Dear {{staffname}},
 
-project {{projectnumber}} for customer {% if customername %}{{customername}} ({{customeremail}}){% else %}{{customeremail}}{% endif %} has been updated.
+project {{projectnumber}} for customers {{customernames}} has been updated.
 
 {{progressinfo}}
 
@@ -513,7 +521,7 @@ Yours sincerely,
 </span><span class="p">(</span><span class="k">def</span><span class="w"> </span><span class="n">project-creation-staff-message</span><span class="w">
 </span><span class="s">"Dear {{staffname}},
 
-Project {{projectnumber}} has been created for customer {% if customername %}{{customername}} ({{customeremail}}){% else %}{{customeremail}}{% endif %}.
+Project {{projectnumber}} has been created for customers {{customernames}}.
 You have been registered for notification e-mails about the progress of this project.
 
 You can access the project for modifications via the following link:
