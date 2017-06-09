@@ -45,7 +45,7 @@ Yours sincerely,
 (def ^:private ^:const project-creation-staff-body
 "Dear {{staffname}},
 
-Project {{projectnumber}} has been created for customer {% if customername %}{{customername}} ({{customeremail}}){% else %}{{customeremail}}{% endif %}.
+Project {{projectnumber}} has been created for customers {{customernames}}.
 You have been registered for notification e-mails about the progess of this project.
 
 You can access the project for modifications via the following link:
@@ -77,7 +77,7 @@ Yours sincerely,
 (def ^:private ^:const project-progress-staff-body
 "Dear {{staffname}},
 
-project {{projectnumber}} for customer {% if customername %}{{customername}} ({{customeremail}}){% else %}{{customeremail}}{% endif %} has been updated.
+project {{projectnumber}} for customers {{customernames}} has been updated.
 
 {{progressinfo}}
 

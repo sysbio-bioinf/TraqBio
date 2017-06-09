@@ -95,29 +95,29 @@
       ; do send
       (let [{:keys [host-config, from, cc-notified-staff?] :as mail-config} (c/mail-config),
             customers (crud/read-project-customers id)]
-       ; customer notification, if the project has just been created or customer notification is specified
-       (when (and (or (= notification-type :project-creation) (= notifycustomer 1)) (seq customers))
-         (let [{:keys [subject, body] :as format-map} (get-in mail-config [notification-type :customer])]
-           (doseq [{:keys [name, email]} customers]
-             (send-project-info-mail (assoc project :customername name), host-config, from,
-               (merge
-                 format-map
-                 (cond-> {:to email
-                          :error-context (format "Project \"%s\" notification for customer %s:" (:projectnumber project), name)}
-                   ; if specified CC notified staff
-                   (and cc-notified-staff? (seq notified-staff-list))
-                   (assoc :cc (mapv :email notified-staff-list))))))))
-       ; staff notification
-       (when (seq notified-staff-list)
-         (let [{:keys [subject, body] :as format-map} (get-in mail-config [notification-type :staff])]
-           (doseq [{:keys [username, fullname, email]} notified-staff-list
-                   :let [staffname (if (str/blank? fullname) username fullname)]]
-             (send-project-info-mail (-> project (assoc :staffname staffname) add-customernames),
-               host-config, from,
-               (merge
-                 format-map
-                 {:to email
-                  :error-context (format "Project \"%s\" notification for TraqBio user %s:" (:projectnumber project) staffname)})))))))
+        ; customer notification, if the project has just been created or customer notification is specified
+        (when (and (or (= notification-type :project-creation) (= notifycustomer 1)) (seq customers))
+          (let [{:keys [subject, body] :as format-map} (get-in mail-config [notification-type :customer])]
+            (doseq [{:keys [name, email]} customers]
+              (send-project-info-mail (assoc project :customername name), host-config, from,
+                (merge
+                  format-map
+                  (cond-> {:to email
+                           :error-context (format "Project \"%s\" notification for customer %s:" (:projectnumber project), name)}
+                    ; if specified CC notified staff
+                    (and cc-notified-staff? (seq notified-staff-list))
+                    (assoc :cc (mapv :email notified-staff-list))))))))
+        ; staff notification
+        (when (seq notified-staff-list)
+          (let [{:keys [subject, body] :as format-map} (get-in mail-config [notification-type :staff])]
+            (doseq [{:keys [username, fullname, email]} notified-staff-list
+                    :let [staffname (if (str/blank? fullname) username fullname)]]
+              (send-project-info-mail (-> project (assoc :staffname staffname) add-customernames),
+                host-config, from,
+                (merge
+                  format-map
+                  {:to email
+                   :error-context (format "Project \"%s\" notification for TraqBio user %s:" (:projectnumber project) staffname)})))))))
     (catch Throwable t
       (log/errorf "Exception when trying to send project creation notification e-mails:\n%s"
         (with-out-str (print-cause-trace t))))))

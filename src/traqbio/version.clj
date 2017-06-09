@@ -21,7 +21,7 @@
 (ns traqbio.version)
 
 
-(def ^:private ^:const version "1.3.7")
+(def ^:private ^:const version "1.3.8")
 
 
 (defn traqbio-version
