@@ -1,4 +1,4 @@
-;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2015
+;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2020
 ;;
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,8 @@
     [clojure.tools.logging :as log]
     [traqbio.config :as c])
   (:import
-    (org.eclipse.jetty.server Server AbstractConnector)
-    org.eclipse.jetty.server.ssl.SslSelectChannelConnector
-    org.apache.log4j.PropertyConfigurator
-    java.util.Properties))
+    (org.eclipse.jetty.server Server)
+    org.apache.log4j.PropertyConfigurator))
 
 
 ; variables instead of atom since the values are only changed at startup and shutdown
@@ -40,34 +38,6 @@
 (defn keep-running?
   []
   keep-running)
-
-
-(defn use-only-tls
-  "For security reasons use only TLSv1.1 and TLSv1.2."
-  [^Server jetty]
-  (let [allowed-protocols (into-array String ["TLSv1.1" "TLSv1.2"])
-        forbidden-protocols (into-array String ["SSLv3" "TLSv1"])]
-    (doseq [^SslSelectChannelConnector con (->> jetty
-                                             .getConnectors
-                                             (filter #(instance? SslSelectChannelConnector %)))]
-      (doto (.getSslContextFactory con)
-        (.setIncludeProtocols allowed-protocols)
-        (.setExcludeProtocols forbidden-protocols)))))
-
-
-(defn use-forwarding
-  "Configure jetty to be used via forwarding."
-  [^Server jetty]
-  (log/infof "Configuring jetty to be used via forwarding.")
-  (doseq [^AbstractConnector con (.getConnectors jetty)]
-    (.setForwarded con true)))
-
-(defn configurator
-  [& fns]
-  (let [fns (remove nil? fns)]
-    (fn [jetty]
-      (doseq [f fns]
-        (f jetty)))))
 
 
 (defn- server-url
@@ -81,11 +51,10 @@
   [app]
   (when-not running-server
     (alter-var-root #'keep-running (constantly true))
-    (let [{:keys [ssl?, forwarded?] :as config} (-> (c/server-config) (assoc :join? false)),
+    (let [{:keys [ssl?] :as config} (-> (c/server-config) (assoc :join? false)),
           server (jetty/run-jetty
                    app
                    (cond-> config
-                     (or ssl? forwarded?) (assoc :configurator (configurator (when ssl? use-only-tls), (when forwarded? use-forwarding)))
                      (not ssl?) (dissoc :ssl-port :key-password :keystore)))]
       (alter-var-root #'running-server (constantly server))
       (let [{:keys [host, port, ssl-port, ssl?, server-root]} (c/server-config)]

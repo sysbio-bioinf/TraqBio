@@ -242,3 +242,11 @@ input[disabled] {
 textarea[disabled] {
 	background-color: white !important;
 }
+
+table.dataTable.vtop tbody td {
+  vertical-align: top;
+}
+
+.table-add-button {
+  margin-top: 1.5em;
+}

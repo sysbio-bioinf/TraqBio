@@ -1,4 +1,4 @@
-;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2015
+;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2020
 ;;
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -25,3 +25,13 @@
   (if (vector? xs)
     xs
     (vec xs)))
+
+
+(defn replace-map-vals
+  [m, f]
+  (persistent!
+    (reduce-kv
+      (fn [result-map, k, v]
+        (assoc! result-map k (f v)))
+      (transient {})
+      m)))

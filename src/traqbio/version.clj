@@ -1,4 +1,4 @@
-;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2015
+;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2020
 ;;
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
 (ns traqbio.version)
 
 
-(def ^:private ^:const version "1.3.8")
+(def ^:private ^:const version "1.4.0-SNAPSHOT")
 
 
 (defn traqbio-version

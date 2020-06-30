@@ -1,4 +1,4 @@
-;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2015
+;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2020
 ;;
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,8 @@
     [clojure.tools.cli :as cli]
     [clojure.tools.logging :as log]
     [ring.adapter.jetty :as jetty]
-    [ring.middleware.http-response :refer [catch-response]]
+    [ring.middleware.http-response :refer [wrap-http-response]]
+    [ring.middleware.proxy-headers :refer [wrap-forwarded-remote-addr]]
     [compojure.handler :as handler]
     [cemerick.friend :as friend]
     (cemerick.friend
@@ -55,38 +56,39 @@
   (binding [friend/*default-scheme-ports* {:http port, :https ssl-port}]
     (handler/site
       (routes/wrap-uncaught-exception-logging
-        (runtime/wrap-shutdown (cond-> (routes/use-server-root server-root, (routes/shutdown-routes))                              
+        (runtime/wrap-shutdown (cond-> (routes/use-server-root server-root, (routes/shutdown-routes))
                                  ssl? (friend/requires-scheme :https)),
-          (catch-response
-            (friend/authenticate
-              (cond-> (routes/use-server-root server-root, (routes/app-routes))
-                ssl? (friend/requires-scheme :https))
-              {:allow-anon? true
-               :credential-fn (partial creds/bcrypt-credential-fn crud/authentication-map)
-               :default-landing-uri (c/server-location "/")
-               :login-uri (c/server-location "/login")
-               :login-failure-handler failed-login
-               :unauthorized-handler routes/unauthorized-handler
-               :workflows [(workflows/interactive-form)]})))))))
+          (wrap-forwarded-remote-addr
+            (wrap-http-response
+              (friend/authenticate
+                (cond-> (routes/use-server-root server-root, (routes/app-routes))
+                  ssl? (friend/requires-scheme :https))
+                {:allow-anon? true
+                 :credential-fn (partial creds/bcrypt-credential-fn crud/authentication-map)
+                 :default-landing-uri (c/server-location "/")
+                 :login-uri (c/server-location "/login")
+                 :login-failure-handler failed-login
+                 :unauthorized-handler routes/unauthorized-handler
+                 :workflows [(workflows/interactive-form)]}))))))))
 
 (def init-options
   [
-    ["-a" "--admin NAME" "Name of the admin user"
-     :default "admin"]
-    ["-p" "--password SECRET" "Admins password"
-     :default "traqbio"]
-    ["-d" "--data-base-name NAME" "Name of the database. TraqBio will not override a existing database file."
-     :default "traqbio.db"]
-    ["-t" "--template-file NAME" "Path to file with a initial set of templates."]
-    ["-h" "--help"]
-  ])
+   ["-a" "--admin NAME" "Name of the admin user"
+    :default "admin"]
+   ["-p" "--password SECRET" "Admins password"
+    :default "traqbio"]
+   ["-d" "--data-base-name NAME" "Name of the database. TraqBio will not override a existing database file."
+    :default "traqbio.db"]
+   ["-t" "--template-file NAME" "Path to file with a initial set of templates."]
+   ["-h" "--help"]
+   ])
 
 (def run-options
   [
-    ["-c" "--config-file FILENAME" "Path to the config file"
-     :default "traqbio.conf"]
-    ["-h" "--help"]
-  ])
+   ["-c" "--config-file FILENAME" "Path to the config file"
+    :default "traqbio.conf"]
+   ["-h" "--help"]
+   ])
 
 (def app-options [])
 
@@ -104,23 +106,23 @@
         "  traqbio init -h"
         "or"
         "  traqbio run -h"]
-       (string/join \newline)))
+    (string/join \newline)))
 
 (defn init-usage [summary]
   (->> ["Initialise the TraqBio instance."
         ""
         summary]
-       (string/join \newline)))
+    (string/join \newline)))
 
 (defn run-usage [summary]
   (->> ["Start the TraqBio instance with a given config file."
         ""
         summary]
-       (string/join \newline)))
+    (string/join \newline)))
 
 (defn error-msg [errors]
   (str "The following errors occurred while parsing your command:\n\n"
-       (string/join \newline errors)))
+    (string/join \newline errors)))
 
 (defn exit [status msg]
   (println msg)
@@ -175,9 +177,11 @@
       errors (exit 1 (error-msg errors)))
     (let [{:keys [data-base-name, server-config, upload-path, mail-config] :as config} (read-config (:config-file options))]
       (runtime/configure-logging config)
-      (c/update-config  config)
-      (c/update-db-name data-base-name)      
+      (c/update-config config)
+      (c/update-db-name data-base-name)
       (when (db-exists? (:config-file options), data-base-name)
+        ; create the tables that do not exist already (e.g. when upgrading to new TraqBio version)
+        (init/create-missing-tables (c/db-connection))
         ; Start server (query server-config atom, since default settings might be missing in the config read from the file)
         (let [server (runtime/start-server (app (c/server-config)))]
           (runtime/shutdown-on-sigterm!)
@@ -225,7 +229,7 @@
           (create-template tmpl))))))
 
 
-(defn -main[& args]
+(defn -main [& args]
   (case (first args)
     "init" (init (rest args))
     "run" (run (rest args))

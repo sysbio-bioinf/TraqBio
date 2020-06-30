@@ -1,4 +1,4 @@
-;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2015
+;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2020
 ;;
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -191,7 +191,7 @@
         projectnumber-changed? (not (t/equal? (:projectnumber old-project) (:projectnumber new-project))),
         changed-attributes (seq (changed-project-attributes old-project, new-project)),
         completed?  (and (= 0 (:done old-project)) (= 1 (:done new-project))),
-        customer-notification-changed? (and (not= (:notifycustomer new-project) (:notifycustomer old-project)))
+        customer-notification-changed? (not= (:notifycustomer new-project) (:notifycustomer old-project))
         notifiedusers-delta (first (data/diff (:notifiedusers new-project) (:notifiedusers old-project)))
         added-users (user-notification-map->vector 1, notifiedusers-delta),
         removed-users (user-notification-map->vector 0, notifiedusers-delta),

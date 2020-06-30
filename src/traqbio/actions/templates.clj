@@ -1,4 +1,4 @@
-;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2015
+;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2020
 ;;
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -41,13 +41,22 @@
     {:status 500}))
 
 
+(defn add-sequence-to-steps
+  [template]
+  (update template :templatesteps
+    (fn [steps]
+      (into []
+        (map-indexed #(assoc %2 :sequence (inc %1)))
+        steps))))
+
+
 (t/defaction create-template
   "Create a new template"
   {:description "Template \"{{parameters.template.name}}\" created",
    :error "Failed to create template \"{{parameters.template.name}}\"",
    :action-type :create}
   [template]
-  (if (crud/create-template template)
+  (if (crud/create-template (add-sequence-to-steps template))
     {:status 200}
     {:status 500}))
 
@@ -63,12 +72,15 @@
   :error "Update of template \"{{parameters.data.template.name}}\" failed",
   :action-type :update}
   [{new-template :template, old-template :oldtemplate :as data}]
-  (let [template-diff (-> (data/diff (dissoc new-template :templatesteps) (dissoc old-template :templatesteps))
+  (let [new-template (add-sequence-to-steps new-template)
+        old-template (add-sequence-to-steps old-template)
+        template-diff (-> (data/diff (dissoc new-template :templatesteps) (dissoc old-template :templatesteps))
                         ; extract modifications of the new template (newest wins with respect to modified properties)
                         first
                          ; add template id to diff
                         (assoc :id (:id new-template))),
         step-changes (diff/step-modifications (:templatesteps new-template), (:templatesteps old-template))]
+    ; TODO: determine changes in text modules analoguous to :templatesteps and perform uppdates in crud/update-template
     (crud/update-template template-diff, step-changes)
     {:status 200, :body {}}))
 

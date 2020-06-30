@@ -1,4 +1,4 @@
-;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2015
+;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2020
 ;;
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -31,14 +31,14 @@
   [db-conn]
   (set
     (jdbc/query db-conn
-      ["SELECT name FROM sqlite_master WHERE type='table'"] :row-fn (comp keyword :name))))
+      ["SELECT name FROM sqlite_master WHERE type='table'"] {:row-fn (comp keyword :name)})))
 
 
 (defn table-columns
   [db-conn, table]
   (jdbc/query db-conn [(format "PRAGMA table_info(%s)" (name table))]
-    :row-fn (comp keyword :name),
-    :result-set-fn vec))
+    {:row-fn (comp keyword :name),
+     :result-set-fn vec}))
 
 
 (defn db-data

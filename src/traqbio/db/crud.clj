@@ -1,4 +1,4 @@
-;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2015
+;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2020
 ;;
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,8 @@
     [clojure.tools.logging :as log]
     [cemerick.friend.credentials :as creds]
     [traqbio.config :as c]
-    [traqbio.common :as common]))
+    [traqbio.common :as common]
+    [clojure.pprint :as pp]))
 
 
 
@@ -99,15 +100,17 @@
 (defn- add-role-keywords
   [user-coll]
   (let [user-map (first user-coll)]
-      (if-let [role (some-> user-map :role edn/read-string)]
-        (assoc user-map :role role, :roles (all-roles role))
-        user-map)))
+    (if-let [role (some-> user-map :role edn/read-string)]
+      (assoc user-map :role role, :roles (all-roles role))
+      user-map)))
 
 (defn- read-full-user
   "Returns a full user-map and applys a funtrion to it"
   [user-name fn]
   (jdbc/query
-    (c/db-connection) ["SELECT * FROM user WHERE username = ?" user-name] :result-set-fn fn))
+    (c/db-connection)
+    ["SELECT * FROM user WHERE username = ?" user-name]
+    {:result-set-fn fn}))
 
 (defn authentication-map
   "Returns the Authentification map for a given user"
@@ -127,7 +130,7 @@
 (defn user-email-addresses
   [user-list]
   (jdbc/with-db-transaction [t-conn (c/db-connection)]
-    (mapv #(first (jdbc/query t-conn  ["SELECT username, fullname, email FROM user WHERE username = ?" %])) user-list)))
+    (mapv #(first (jdbc/query t-conn ["SELECT username, fullname, email FROM user WHERE username = ?" %])) user-list)))
 
 (defn delete-user
   [user-name]
@@ -138,29 +141,29 @@
 
 (defn notified-users-of-project
   ([project-id]
-    (notified-users-of-project (c/db-connection), project-id))
+   (notified-users-of-project (c/db-connection), project-id))
   ([db-conn, project-id]
-    (mapv :username (jdbc/query db-conn, ["SELECT username FROM usernotification WHERE projectid = ?" project-id]))))
+   (mapv :username (jdbc/query db-conn, ["SELECT username FROM usernotification WHERE projectid = ?" project-id]))))
 
 
 (defn add-notified-user-for-project
   ([project-id, usernames]
-    (add-notified-user-for-project (c/db-connection), project-id, usernames))
+   (add-notified-user-for-project (c/db-connection), project-id, usernames))
   ([db-conn, project-id, usernames]
-    (when (seq usernames)
-      (apply db-insert! db-conn, :usernotification, (mapv #(hash-map :projectid project-id, :username %) usernames)))
-    true))
+   (when (seq usernames)
+     (apply db-insert! db-conn, :usernotification, (mapv #(hash-map :projectid project-id, :username %) usernames)))
+   true))
 
 
 (defn remove-notified-user-from-project
   ([project-id, usernames]
-    (remove-notified-user-from-project (c/db-connection), project-id, usernames))
+   (remove-notified-user-from-project (c/db-connection), project-id, usernames))
   ([db-conn, project-id, usernames]
-    (when (seq usernames)
-      (jdbc/with-db-transaction [t-conn db-conn]
-        (doseq [user usernames]
-          (jdbc/delete! t-conn, :usernotification, ["projectid = ? AND username = ?" project-id, user]))))
-    true))
+   (when (seq usernames)
+     (jdbc/with-db-transaction [t-conn db-conn]
+       (doseq [user usernames]
+         (jdbc/delete! t-conn, :usernotification, ["projectid = ? AND username = ?" project-id, user]))))
+   true))
 
 
 (defn read-templates
@@ -178,16 +181,39 @@
       FROM templatestep
       WHERE templatestep.template = ?" template-id]))
 
+
+(defn read-text-modules
+  [template-step-id-list]
+  (into []
+    (comp
+      (keep
+        (fn [step-id]
+          (some->> (jdbc/query
+                     (c/db-connection)
+                     ["SELECT tm.id, tm.name, tm.text
+                       FROM textmoduletemplatestep AS ms, textmodule AS tm
+                       WHERE ms.templatestepid = ? AND ms.textmoduleid = tm.id"
+                      step-id])
+            not-empty
+            (mapv #(assoc % :step step-id)))))
+      cat)
+    template-step-id-list))
+
+
 (defn read-template
   "Returns a template-map with joind templatesteps"
   [template-id]
   (when-let [template (jdbc/query
                         ; cant use a join here, because jdbc/query results in a flat vector and strugles with double keywords
-                        (c/db-connection) ["SELECT template.id, template.name, template.description
-                                FROM template
-                                WHERE template.id = ?" template-id] :result-set-fn first)]
-    (assoc template
-      :templatesteps (vec (sort-by :sequence (read-template-steps template-id))))))
+                        (c/db-connection)
+                        ["SELECT template.id, template.name, template.description
+                          FROM template
+                          WHERE template.id = ?" template-id]
+                        {:result-set-fn first})]
+    (let [template-steps (vec (sort-by :sequence (read-template-steps template-id)))]
+      (assoc template
+        :templatesteps template-steps
+        :textmodules (read-text-modules (mapv :id template-steps))))))
 
 
 (defn- update-or-insert!
@@ -206,7 +232,9 @@
   "Rowid and id may differ. So use this function to read a template right after creation."
   [rowid]
   (->
-    (jdbc/query (c/db-connection) ["SELECT id FROM template WHERE rowid=?" rowid] :result-set-fn #(-> % first :id))
+    (jdbc/query (c/db-connection)
+      ["SELECT id FROM template WHERE rowid=?" rowid]
+      {:result-set-fn #(-> % first :id)})
     read-template))
 
 
@@ -220,7 +248,9 @@
   step must contain only :id :type :description :sequence :template
   See create-template-step-table"
   [t-conn, step]
-  (jdbc/insert! t-conn, :templatestep, (-> step normalize-templatestep-data (dissoc :id))))
+  (-> (jdbc/insert! t-conn, :templatestep, (-> step normalize-templatestep-data (dissoc :id)))
+    first
+    rowid_keyword))
 
 
 (defn update-templatestep
@@ -233,6 +263,46 @@
   (jdbc/delete! t-conn, :templatestep, ["id = ?", id]))
 
 
+(defn create-template-steps
+  [t-conn, template-id, template-steps]
+  (persistent!
+    (reduce
+      (fn [step-id->db-id, {:keys [id] :as step}]
+        (let [db-id (create-templatestep t-conn, (assoc step :template template-id))]
+          (assoc! step-id->db-id id db-id)))
+      (transient {})
+      template-steps)))
+
+
+(defn create-textmodule
+  [t-conn, text-module]
+  (-> (jdbc/insert! t-conn, :textmodule, (dissoc text-module :id, :step))
+    first
+    rowid_keyword))
+
+
+(defn create-template-module-steps
+  [t-conn, text-modules]
+  (persistent!
+    (reduce
+      (fn [db-id->step-id, {:keys [step] :as module}]
+        (if (>= step 0)
+          (let [db-id (create-textmodule t-conn, module)]
+            (assoc! db-id->step-id db-id step))
+          db-id->step-id))
+      (transient {})
+      text-modules)))
+
+
+(defn assign-text-modules-to-template-steps
+  [t-conn, module-db-id->step-db-id]
+  (jdbc/insert-multi! t-conn, :textmoduletemplatestep
+    (mapv
+      (fn [[module-db-id, step-db-id]]
+        {:templatestepid step-db-id, :textmoduleid module-db-id})
+      module-db-id->step-db-id)))
+
+
 (defn normalize-template-data
   [template]
   (select-keys template [:id :name :description]))
@@ -242,16 +312,20 @@
   "Inserts or updates a template.
   template must only contain :id :name :description :advisor :customeremail :customername :flowcellnr :templatesteps.
   :templatesteps is a list of templatestep maps. put-TemplateStep is called for every templatestep"
-  [{:keys [templatesteps] :as template}]
+  [{:keys [templatesteps, textmodules] :as template}]
   (jdbc/with-db-transaction [t-conn (c/db-connection)]
     (let [template (-> template normalize-template-data (dissoc :id)),
-          id (->> template               
-               (jdbc/insert! t-conn, :template)
-               first
-               ; the project id (PRIMARY KEY AUTOINCREMENT) is an alias for the rowid in SQLite, hence it contains 
-               rowid_keyword)]
-      (doseq [step templatesteps]
-        (create-templatestep t-conn, (assoc step :template id)))
+          template-id (->> template
+                        (jdbc/insert! t-conn, :template)
+                        first
+                        ; the project id (PRIMARY KEY AUTOINCREMENT) is an alias for the rowid in SQLite, hence it contains
+                        rowid_keyword)
+          ; insert template steps
+          step-id->db-id (create-template-steps t-conn, template-id, templatesteps)
+          ; insert text modules
+          module-db-id->step-id (create-template-module-steps t-conn, textmodules)
+          module-db-id->step-db-id (common/replace-map-vals module-db-id->step-id step-id->db-id)]
+      (assign-text-modules-to-template-steps t-conn, module-db-id->step-db-id)
       true)))
 
 
@@ -289,37 +363,37 @@
 
 (defn read-project-steps
   ([project-id]
-    (read-project-steps (c/db-connection), project-id))
+   (read-project-steps (c/db-connection), project-id))
   ([db-conn, project-id]
-    (jdbc/query db-conn,
-      ["SELECT projectstep.id, projectstep.type, projectstep.description, projectstep.freetext, projectstep.timestamp, projectstep.state, projectstep.advisor, projectstep.sequence
+   (jdbc/query db-conn,
+     ["SELECT projectstep.id, projectstep.type, projectstep.description, projectstep.freetext, projectstep.timestamp, projectstep.state, projectstep.advisor, projectstep.sequence
         FROM projectstep
         WHERE projectstep.project = ?" project-id])))
 
 
 (defn step-exists
   ([project-id, step-id]
-    (jdbc/with-db-transaction [t-conn (c/db-connection)]
-      (step-exists t-conn, project-id, step-id)))
+   (jdbc/with-db-transaction [t-conn (c/db-connection)]
+     (step-exists t-conn, project-id, step-id)))
   ([db-conn, project-id, step-id]
-    (jdbc/query db-conn,
-      ["SELECT * FROM projectstep WHERE project = ? AND id = ?" project-id, step-id]
-      :result-set-fn first)))
+   (jdbc/query db-conn,
+     ["SELECT * FROM projectstep WHERE project = ? AND id = ?" project-id, step-id]
+     {:result-set-fn first})))
 
 
 (defn read-customers
   "Get a list of all names and email adresses of the saved customers"
   ([]
-    (read-customers (c/db-connection)))
+   (read-customers (c/db-connection)))
   ([db-conn]
-    (jdbc/query db-conn ["SELECT DISTINCT id, email, name FROM customer SORT"])))
+   (jdbc/query db-conn ["SELECT DISTINCT id, email, name FROM customer SORT"])))
 
 
 
 (defn normalize-customer-attributes
   [customer]
   (-> customer
-    (update-in [:name]  #(some-> % str/trim capitalize-name))
+    (update-in [:name] #(some-> % str/trim capitalize-name))
     (update-in [:email] #(some-> % str/trim str/lower-case))))
 
 (defn normalize-customer-data
@@ -343,7 +417,7 @@
           (conj result id)
           (let [id (->> customer
                      normalize-customer-data
-                     (jdbc/insert! db-conn, :customer, )
+                     (jdbc/insert! db-conn, :customer,)
                      first
                      rowid_keyword)]
             (conj result id))))
@@ -353,54 +427,54 @@
 
 (defn read-project-customers
   ([project-id]
-    (read-project-customers (c/db-connection), project-id))
+   (read-project-customers (c/db-connection), project-id))
   ([t-conn, project-id]
-    (jdbc/query t-conn,
-      ["SELECT c.name, c.email, pc.sequence FROM customer AS c, projectcustomer AS pc WHERE pc.projectid = ? AND c.id = pc.customerid", project-id]
-      :result-set-fn vec)))
+   (jdbc/query t-conn,
+     ["SELECT c.name, c.email, pc.sequence FROM customer AS c, projectcustomer AS pc WHERE pc.projectid = ? AND c.id = pc.customerid", project-id]
+     {:result-set-fn vec})))
 
 
 (defn read-project-number
   ([project-id]
-    (jdbc/with-db-transaction [t-conn (c/db-connection)]
-      (read-project-number t-conn, project-id)))
+   (jdbc/with-db-transaction [t-conn (c/db-connection)]
+     (read-project-number t-conn, project-id)))
   ([db-conn, project-id]
-    (jdbc/query db-conn
-      ["SELECT projectnumber FROM project WHERE project.id = ?" project-id]
-      :result-set-fn #(some-> % first :projectnumber))))
+   (jdbc/query db-conn
+     ["SELECT projectnumber FROM project WHERE project.id = ?" project-id]
+     {:result-set-fn #(some-> % first :projectnumber)})))
 
 
 (defn read-project
   "Get a project with projectsteps from database with given id"
   ([project-id]
-    (read-project (c/db-connection), project-id))
+   (read-project (c/db-connection), project-id))
   ([db-conn, project-id]
-    (jdbc/with-db-transaction [t-conn db-conn]
-      (when-let [project (jdbc/query t-conn
-                           ; cant use a join here, because jdbc/query results in a flat vector and strugles with double keywords
-                           ["SELECT * FROM project WHERE project.id = ?" project-id]
-                           :result-set-fn first)]
-        (let [users-to-notify (some-> (notified-users-of-project t-conn, (:id project)) sort (zipmap (repeat 1))),
-              steps (vec (read-project-steps t-conn, project-id))]
-          (cond-> (assoc project
-                    :notifiedusers users-to-notify
-                    :customers (read-project-customers t-conn, project-id))
-            (seq steps) (assoc :projectsteps steps)))))))
+   (jdbc/with-db-transaction [t-conn db-conn]
+     (when-let [project (jdbc/query t-conn
+                          ; cant use a join here, because jdbc/query results in a flat vector and strugles with double keywords
+                          ["SELECT * FROM project WHERE project.id = ?" project-id]
+                          {:result-set-fn first})]
+       (let [users-to-notify (some-> (notified-users-of-project t-conn, (:id project)) sort (zipmap (repeat 1))),
+             steps (vec (read-project-steps t-conn, project-id))]
+         (cond-> (assoc project
+                   :notifiedusers users-to-notify
+                   :customers (read-project-customers t-conn, project-id))
+           (seq steps) (assoc :projectsteps steps)))))))
 
 (defn read-project-rowid
   "Rowid and id may differ. So use this function to read a project right after creation."
   ([row-id]
-    (read-project-rowid (c/db-connection), row-id))
+   (read-project-rowid (c/db-connection), row-id))
   ([db-conn, rowid]
-    (->
-      (jdbc/query db-conn ["SELECT id FROM project WHERE rowid=?" rowid] :result-set-fn #(-> % first :id))
-      read-project)))
+   (->
+     (jdbc/query db-conn ["SELECT id FROM project WHERE rowid=?" rowid] {:result-set-fn #(-> % first :id)})
+     read-project)))
 
 (defn read-project-by-tracking-nr
   "Get a project with projectsteps from database with given tracking-nr"
   [tracking-nr]
   (->
-    (jdbc/query (c/db-connection) ["SELECT project.id FROM project WHERE project.trackingNr = ?" tracking-nr] :result-set-fn first)
+    (jdbc/query (c/db-connection) ["SELECT project.id FROM project WHERE project.trackingNr = ?" tracking-nr] {:result-set-fn first})
     :id
     read-project))
 
@@ -413,7 +487,7 @@
 (defn normalize-project-data
   [project]
   (select-keys project
-    [:id :trackingnr :description :dateofreceipt, 
+    [:id :trackingnr :description :dateofreceipt,
      :advisor :orderform :flowcellnr :samplesheet :done :projectnumber :notifycustomer]))
 
 
@@ -424,10 +498,10 @@
 
 (defn update-projectstep
   ([step]
-    (jdbc/with-db-transaction [t-conn (c/db-connection)]
-      (update-projectstep t-conn, step)))
+   (jdbc/with-db-transaction [t-conn (c/db-connection)]
+     (update-projectstep t-conn, step)))
   ([t-conn, {:keys [id] :as step}]
-    (jdbc/update! t-conn, :projectstep, (normalize-projectstep-data step), ["id = ?", id])))
+   (jdbc/update! t-conn, :projectstep, (normalize-projectstep-data step), ["id = ?", id])))
 
 
 (defn delete-projectstep
@@ -439,8 +513,8 @@
 (defn read-project-customer-ids
   [t-conn, project-id]
   (jdbc/query t-conn, ["SELECT customerid FROM projectcustomer WHERE projectid = ?", project-id]
-    :result-set-fn set
-    :row-fn :customerid))
+    {:result-set-fn set
+     :row-fn :customerid}))
 
 
 (defn add-customers-to-project
@@ -547,14 +621,14 @@
 (defn read-log
   "Read entrys from actionlog"
   ([]
-    (jdbc/query (c/db-connection)
-      ["SELECT * FROM actionlog ORDER BY rowid DESC"]))
+   (jdbc/query (c/db-connection)
+     ["SELECT * FROM actionlog ORDER BY rowid DESC"]))
   ([limit]
-    (jdbc/query (c/db-connection)
-      ["SELECT * FROM actionlog ORDER BY rowid DESC LIMIT ?", limit]))
+   (jdbc/query (c/db-connection)
+     ["SELECT * FROM actionlog ORDER BY rowid DESC LIMIT ?", limit]))
   ([offset, limit]
-    (jdbc/query (c/db-connection)
-      ["SELECT * FROM actionlog ORDER BY rowid DESC LIMIT ? OFFSET ?", limit, offset])))
+   (jdbc/query (c/db-connection)
+     ["SELECT * FROM actionlog ORDER BY rowid DESC LIMIT ? OFFSET ?", limit, offset])))
 
 
 (defn log-count
@@ -571,16 +645,16 @@
   "Read all finished projects."
   []
   (jdbc/with-db-transaction [t-conn (c/db-connection)]
-    (let [finished-project-ids (jdbc/query t-conn ["SELECT id FROM project WHERE done = 1"] :row-fn :id)]
+    (let [finished-project-ids (jdbc/query t-conn ["SELECT id FROM project WHERE done = 1"] {:row-fn :id})]
       (mapv #(read-project t-conn %) finished-project-ids))))
 
 
 (defn read-current-project-ids
   ([]
-    (jdbc/with-db-transaction [t-conn (c/db-connection)]
-      (read-current-project-ids t-conn)))
+   (jdbc/with-db-transaction [t-conn (c/db-connection)]
+     (read-current-project-ids t-conn)))
   ([t-conn]
-    (jdbc/query t-conn ["SELECT id FROM project WHERE done = 0"] :row-fn :id)))
+   (jdbc/query t-conn ["SELECT id FROM project WHERE done = 0"] {:row-fn :id})))
 
 
 (defn read-current-projects
@@ -593,7 +667,7 @@
 
 (defn next-default-projectnumber
   []
-  (->> (jdbc/query (c/db-connection) ["SELECT projectnumber FROM project WHERE projectnumber LIKE \"P-%\""] :row-fn :projectnumber)
+  (->> (jdbc/query (c/db-connection) ["SELECT projectnumber FROM project WHERE projectnumber LIKE \"P-%\""] {:row-fn :projectnumber})
     (keep #(some->> % (re-find #"P-(\d+)") second Long/parseLong))
     (reduce max 0)
     inc

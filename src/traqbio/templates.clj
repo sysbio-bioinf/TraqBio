@@ -1,4 +1,4 @@
-;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2015
+;; Copyright Fabian Schneider and Gunnar Völkel © 2014-2020
 ;;
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,8 @@
     [cemerick.friend :as friend]
     [traqbio.config :as c]
     [traqbio.db.crud :as crud]
-    [traqbio.version :as v]))
+    [traqbio.version :as v]
+    [clojure.data.json :as json]))
 
 ;; Filter functions for selmer (templating)
 (sel-filter/add-filter! :even (fn [counter] (even? counter)))
@@ -204,7 +205,7 @@
 
 (defn template-create
   [request templates]
-  (parser/render-file "templates/templatecreate.html"
+  (parser/render-file "templates/templatecreate-new.html"
     (add-server-root
       {:request (add-auth-info request)
        :templates templates})))
@@ -212,10 +213,10 @@
 
 (defn template-edit
   [request, template]
-  (parser/render-file "templates/templateedit.html"
+  (parser/render-file "templates/templateedit-new.html"
     (add-server-root
       {:request (add-auth-info request)
-       :template (-> template sort-projectsteps)})))
+       :templateData (-> template sort-projectsteps json/write-str)})))
 
 
 (defn project-edit-list

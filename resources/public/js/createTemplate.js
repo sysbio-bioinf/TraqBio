@@ -90,7 +90,7 @@
 
         
         var templateLoaded = function(template) {
-            var idCounter = 0;
+            var stepIdCounter = 0;
             var tBody = $('#step-table tbody');
             var templateData = $('#templateData');
             
@@ -157,7 +157,7 @@
                 }
 
                 template.templatesteps.push({
-                    id: --idCounter,
+                    id: --stepIdCounter,
                     type: "",
                     description:"",
                     sequence: newSeq

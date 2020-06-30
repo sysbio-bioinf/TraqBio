@@ -14,7 +14,7 @@
         }
     	
     	var tBody = $('#step-table tbody');
-    	var idCounter = 0;
+    	var stepIdCounter = 0;
     	
     	function initializeTemplate(){
             $('.template-init').each(function(){
@@ -102,7 +102,7 @@
             }
 
             template.templatesteps.push({
-                id: --idCounter,
+                id: --stepIdCounter,
                 type: "",
                 description:"",
                 sequence: newSeq

@@ -50,7 +50,7 @@ TraqBio is distributed under the MIT License:
 
 The MIT License (MIT)
 
-Copyright Fabian Schneider and Gunnar Völkel © 2014-2017
+Copyright Fabian Schneider and Gunnar Völkel © 2014-2020
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

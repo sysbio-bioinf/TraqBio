@@ -13,3 +13,4 @@ pom.xml.asc
 # IntelliJ files
 .idea
 *.iml
+*.log

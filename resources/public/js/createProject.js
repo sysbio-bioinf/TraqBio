@@ -19,7 +19,7 @@
         var successTemplate = '<div class="alert alert-success"><% message %></div>';
         var errorTemplate = '<div class="alert alert-danger"><% message %></div>';
         
-        var idCounter = 0;
+        var stepIdCounter = 0;
         var template = null;
 
         var tBody = $('#step-table tbody');
@@ -321,7 +321,7 @@
             }
 
             template.templatesteps.push({
-                id: --idCounter,
+                id: --stepIdCounter,
                 type: "",
                 description:"",
                 sequence: newSeq
