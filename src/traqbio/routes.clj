@@ -66,6 +66,8 @@
 (core/defroutes project-routes
   (core/context "/edit" []
     (core/GET "/" request (templates/project-edit-list request (db/read-current-projects)))
+    (core/GET "/" request (templates/textmodule-list request (db/read-text-modules))) ;using "/1" breaks rendering of steps
+
     (core/GET ["/:id", :id #"[0-9]+"] [id :as request]
               (if-let [project (db/read-project id)]
                 (if (= (:done project) 1)
@@ -73,7 +75,7 @@
                   (templates/project-edit request, project))
                 (templates/not-found)))
     (core/PUT ["/:id", :id #"[0-9]+"] [id :as request] (project-action/update-project (:body request)))
-    (core/DELETE ["/:id", :id #"[0-9]+"] [id] (project-action/delete-project id)))
+    (core/DELETE ["/:id", :id #"[0-9]+"] [id] (project-action/delete-project id)));end of /edit context
   (core/context "/view" []
     (core/GET "/" request (templates/finished-project-list request (db/read-finished-projects)))
     (core/GET ["/:pId", :pId #"[0-9]+"] [pId :as request]
@@ -83,7 +85,6 @@
     (core/POST "/" request (project-action/create-project (:body request)))
     (mp/wrap-multipart-params
       (core/POST "/upload" {params :params} (project-action/upload (:file params) (:trackingnr params))))))
-
 
 (core/defroutes template-api-routes
   (core/GET ["/:tmplId", :tmplId #"[0-9]+"] [tmplId]
@@ -102,12 +103,13 @@
       (templates/template-create request (db/read-templates)))
     (core/POST "/" request
       (templ-api/create-template (:body request))))
-  (core/GET "/list" request (templates/template-list request (db/read-templates))))
-
+  (core/GET "/list" request (templates/template-list request (db/read-templates)))
+  )
 
 (core/defroutes api-routes
   (core/context "/prj" []
     (friend/wrap-authorize project-routes, #{::c/user}))
+
   (core/context "/template" []
     (friend/wrap-authorize template-api-routes, #{::c/user}))
   (core/context "/usr" []
@@ -148,15 +150,15 @@
     (core/GET ["/track/:trackingNr"] [trackingNr :as request] (templates/tracking request, trackingNr))
     (wrap-cache-control (wrap-not-modified (wrap-content-type (route/resources "/"))))
     (core/GET "/resetrequest" request (templates/reset-request-view request))
-    (core/POST "/resetrequest" request (templates/reset-request-view request, 
-                                         (merge 
+    (core/POST "/resetrequest" request (templates/reset-request-view request,
+                                         (merge
                                            {:reset-requested? true}
                                            (user-action/request-password-reset request))))
     (core/GET ["/reset/:resetId", :resetId  #"[-0-9A-F]+"] [resetId :as request]
       (when-let [reset-data (db/password-reset-data-by-id resetId)]
         (templates/reset-password-view reset-data)))
     (core/POST ["/reset/:resetId", :resetId  #"[-0-9A-F]+"], [resetId :as request]
-      (when-let [reset-data (db/password-reset-data-by-id resetId)]        
+      (when-let [reset-data (db/password-reset-data-by-id resetId)]
         (templates/reset-password-view reset-data,
           (assoc (user-action/reset-password request, reset-data)
             :reset-completed? true))))
@@ -166,7 +168,7 @@
       (friend/wrap-authorize
         (core/routes
           (core/GET "/" request (templates/timeline request))),
-        #{::c/user}))  
+        #{::c/user}))
     (core/context "/doc" []
       (friend/wrap-authorize
         (core/routes

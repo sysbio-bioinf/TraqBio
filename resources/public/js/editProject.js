@@ -11,16 +11,16 @@
             customers: [],
             notifiedusers: {}
         };
-        
+
     var stepBody, stepTemplate,
     	prevTitleEdit = null,
     	templateRow,
-    	newStepId = 0;        
-    
+    	newStepId = 0;
+
     var customerTable,
         customerTableBody,
         customerTemplateRow;
-    
+
     $(document).ready(function () {
 
         initializeProject();
@@ -28,26 +28,26 @@
         stepBody = $('#stepsAccordion');
         stepTemplate = $('#project_step').html();
         customerTemplateRow = $('#customer_template_row').html();
-        
+
         customerTable = $('#customer-notification-table');
         customerTableBody = $('#customer-notification-table tbody');
-        
+
         $('.customize').on('change', projectDataBinding);
 
         $('#orderform').on('change', function() { orderFormChanged = true;});
 
-        $('#samplesheet').on('change', function() { sampleSheetChanged = true;});        
+        $('#samplesheet').on('change', function() { sampleSheetChanged = true;});
 
         $('#updateProject').on('click', putProject);
-        
+
         $('#exportTemplate').on('click', saveAsTemplate);
-        
+
         $('#addCustomerRow').off('click').on('click', function(e) { addCustomerRow({}); });
-        
+
         templateRow = $('#template_row').html();
-        
+
         redraw();
-        
+
         // initialize customer selection dialog
         var customerSelectionTableDom = $('#customer-table');
         var customerSelectionTable = customerSelectionTableDom.DataTable({
@@ -70,10 +70,10 @@
             var customer = customerSelectionTable.row(row).data();
 
             var customerData = {email: customer[1], name: customer[0]}
-            
+
             addCustomerRow( customerData );
             redrawCustomers();
-            
+
             $('.select-customer').modal('toggle');
             $('tr.selected', customerSelectionTableDom).removeClass('selected');
         }
@@ -85,24 +85,53 @@
         $('#btn-select').on('click', function(){
             selectCustomer('.selected');
         });
-        
+
         $('#btn-close').on('click', function(){
         	$('tr.selected', customerSelectionTableDom).removeClass('selected');
         });
         // END initialize customer selection dialog
-    });
-    
+
+        var $moduletable = $('#moduletable').attr('value'); //gets actual table as string maps from :moduletable in clj
+        //{:id 92, :template 5, :step 1, :name "SeqMod1", :text "textSeq\nStep1"} is present in $moduletable
+        //TODO: Selection based on template can not be the problem, since P2 has same basis as P1 but doesn't show dropdown -> Problem must be link to Project id / routing
+        AppendOptions2Dropdown($moduletable);//Appends all options to their step-specific dropdown-menus
+
+    }); //end of document.ready
+
+    function AppendOptions2Dropdown(moduletable){
+            var modarray = moduletable.split(/[{}]/); //yields array with 2*N+1 entries for all N textmodules, saved in positions 1,3,5,...,2*N-1
+            var N = modarray.length; var i;
+            var $projtemplid = $('#projtemplid').attr('value').split(/[ }]/)[1]; //correctly gives out template number to which project belongs, compare this with mod-template
+            for (i = 1; i < N; i=i+2) {//loop correctly gets all individual maps/modules (i.e. content inside {})
+                var module = modarray[i]; //typeof => string
+                var module_template = parseInt(module.split(':template').pop().split(',')[0]);
+                if (module_template == $projtemplid){//only get those modules which belong to the current project
+                    //correctly extracts entries for step, name and text
+                    var module_id = parseInt(module.split(':id').pop().split(',')[0]);
+                    var module_step = parseInt(module.split(':step').pop().split(',')[0]);
+                    var module_name = module.split(':name').pop().split(',')[0];
+                        var module_name = module_name.substr(1,module_name.length -1);
+                    var module_text = module.split(':text').pop().split(',')[0];
+                    //data-id counts steps across all projects, data-sequence counts steps from 1
+                    $('.AccStepSelector[data-sequence="' + module_step + '"]').append($('<option>', {
+                        value: module_id,
+                        text: module_name.slice(1,-1),
+                        descr: module_text
+                    }));
+                }
+            } 
+    }//end of AppendOptions2Dropdown function, called once when page first renders
 
     function initializeProject(){
         $('.project-init').each(function(){
             var name  = $(this).data().name;
-            
+
             var value = $(this).text();
-            
+
             if( name === "notifycustomer" ){
-            	value = parseInt( value );            	
+            	value = parseInt( value );
             }
-            
+
             project[name] = value;
             oldproject[name] = value;
         });
@@ -116,14 +145,14 @@
         $('.users-init').each(usersInit);
         initCustomers();
     }
-    
+
     function initCustomers(){
     	var initElements = $('.customers-init');
     	var n = initElements.length;
-    	
+
     	project.customers = new Array(n);
     	oldproject.customers = new Array(n);
-    	
+
     	initElements.each(
 			function(){
 				var data = $(this).data();
@@ -135,41 +164,41 @@
 							customerData[ $(this).data().name ] = $(this).text();
 							oldCustomerData[ $(this).data().name ] = $(this).text();
 						});
-				
+
 				project.customers[ sequence ] = customerData;
-				oldproject.customers[ sequence ] = oldCustomerData;				
+				oldproject.customers[ sequence ] = oldCustomerData;
 			});
     }
-    
+
     function addCustomerRow(customerData) {
         project.customers.push(customerData);
-                    
+
         var formgroup = customerTableBody.closest(".form-group");
     	formgroup.removeClass('has-error');
     	customerTable.find("th").removeClass('has-error');
-    	
+
         redraw();
     }
-    
+
     function deleteCustomerRow(e){
     	var todelete = $(this).data().index;
     	project.customers.splice( todelete, 1 );
     	redraw();
     }
-    
+
     function createProjectStep(){
     	var id    = $(this).data().id;
     	var sequence    = $(this).data().sequence;
     	project.projectsteps.push({id: id, sequence: sequence});
         oldproject.projectsteps.push({id: id, sequence: sequence});
     }
-    
+
     function projectStepInit(){
         var idx  = $(this).data().sequence - 1;
-        
+
         var step = project.projectsteps[ idx ];
         var oldstep = oldproject.projectsteps[ idx ];
-        
+
         $(this).find("div").each(function(){
             var name = $(this).data().name,
                 val;
@@ -181,20 +210,20 @@
             }else {
                 val = $(this).text();
             }
-            
+
             step[name] = val;
             if( name === "state")
             	step["prevstate"] = val;
             oldstep[name] = val;
         });
-        
+
         if( !('iscurrent' in step) ){
         	step['iscurrent'] = false;
         	oldstep['iscurrent'] = false;
         }
-        	
+
     }
-    
+
     function usersInit(){
         var username = $(this).data().username;
         var notifyvalue =  parseInt($(this).text());
@@ -205,7 +234,7 @@
     function projectDataBinding(e) {
         var name  = $(this).data().name;
         var value = $(this).val();
-        
+
         if( name == "usernotification" )
         {
         	var username = $(this).data().username;
@@ -276,13 +305,14 @@
         }
     }
 
-    function putProject(e) {
+    function putProject(e) { //NOTE: This function is being called when updateProject button is clicked
+        var checkpassed = fnCheckForRestrictedWords(printerror=true);
     	$('#projectData').find(".has-error").removeClass('has-error');
-    	
+
     	var formgroup = customerTable.closest(".form-group");
-    	var helpblock = formgroup.find('.help-block.with-errors'); 
+    	var helpblock = formgroup.find('.help-block.with-errors');
     	helpblock.empty();
-    	
+
 		var formErrors = $('#projectData').validator('validate').find('.has-error');
 		var customerTableError = $( customerTableBody ).find("tr").length == 0;
 		if (formErrors.length > 0) {
@@ -293,10 +323,10 @@
 		else if (customerTableError)
         {
         	formgroup.addClass('has-error');
-        	customerTable.find("th").addClass('has-error');                	
-        	                   
+        	customerTable.find("th").addClass('has-error');
+
             helpblock.append("Please add at least one customer");
-        	
+
         	$('html, body').animate({
                 scrollTop: formgroup.offset().top
             }, 300);
@@ -304,36 +334,39 @@
 		else{
 			if (orderFormChanged)
 	            updateOrderForm();
-	
+
 	        if (sampleSheetChanged)
 	            updateSampleSheet();
-	
-	        $.ajax({
-	            url: serverRoot + '/prj/edit/' + project.id,
-	            type: 'PUT',
-	            contentType: "application/json; charset=utf-8",
-	            data: JSON.stringify({project: project, oldproject: oldproject}),
-	            success: success
-	        });
+            
+            //if checkpassed is true, execute ajax, if not remain on the same page
+            if (checkpassed == true){
+                $.ajax({
+                    url: serverRoot + '/prj/edit/' + project.id,
+                    type: 'PUT',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({project: project, oldproject: oldproject}),
+                    success: success
+                });
+            }
          }
-    }
+    }//end of PutProject function
 
     function success(e) {
         window.location = serverRoot + '/prj/edit'
     }
-    
+
     var renderProjectSteps = function(body, project) {
-    	
+
         $.each(project.projectsteps, function(index, step){
-        	
+
         	// marks new state
         	if( step.state == 1 ){
         		step['done'] = true;
-        		
+
         	}else{
-        		delete step['done'];        	
+        		delete step['done'];
         	}
-        	
+
         	// coloring and controls based on previous state
         	if( step.prevstate == 1 ){
         		step['prevdone'] = true;
@@ -342,23 +375,23 @@
         		delete step['prevdone'];
         		step.panel_state = "";
         	}
-        	
-        	if( step.iscurrent ){        		
+
+        	if( step.iscurrent ){
         		step.collapse = "collapse in";
         		step.panel_state = "panel-info";
         	}else
-        		step.collapse = "collapse";        		
-        	
+        		step.collapse = "collapse";
+
         	if( step.type )
         		step.name = step.type;
         	else
         		step.name = "Step-".concat(index);
-        	
+
             var row = Mustache.render(stepTemplate, step);
             body.append(row);
         });
     };
-    
+
     function bindHandler() {
     	$('.customizeStep').on('change', projectStepDataBinding);
     	stepBody.find('.btn-add-row').on('click', addRow);
@@ -380,18 +413,18 @@
         stepBody.find('.edit-step-title').on( 'click', initStepTitleEdit );
         stepBody.find('.step-title').on('save', updateStepTitle);
         stepBody.find('.step-title').on('hidden', restoreEditButton);
-        
+
         $('[data-toggle="tooltip"]').tooltip();
     }
-    
+
     function customerDataBinding(e){
         var index = $(this).data().index;
         var name = $(this).data().name;
         var value = $(this).val();
-        
+
         project.customers[index][name] = value;
     }
-    
+
     function renderCustomers(customerTableBody, project) {
         $.each(project.customers, function(index, customer){
         	customer.index = index;
@@ -406,59 +439,59 @@
     	customerTableBody.empty();
         renderCustomers(customerTableBody, project);
     }
-    
+
     function redraw() {
         stepBody.empty();
         renderProjectSteps(stepBody, project);
         bindHandler();
         redrawCustomers();
     }
-    
+
     function compareSteps(f, s) {
         return (f.sequence < s.sequence) ? -1 : 1;
     }
-    
+
     function restoreEditButton(e) {
     	e.stopPropagation();
-    	
+
     	// in case of previous edits, restore their edit buttons
     	if( prevTitleEdit != null )
     		stepBody.find( "#".concat(prevTitleEdit) ).show();
     }
-    
+
     function initStepTitleEdit(e){
     	e.stopPropagation();
-    	
+
     	// necessary for switching between editing of two step titles
     	restoreEditButton(e);
-    	
+
     	prevTitleEdit = $(this)[0].id;
-    		
+
     	var stepid = $(this).data().stepid;
-    	stepBody.find( stepid ).editable('toggle');    	
+    	stepBody.find( stepid ).editable('toggle');
         $(this).hide();
     }
-    
+
     function updateStepTitle(e, params){
     	e.stopPropagation();
     	var steps = project.projectsteps,
     		titleid = e.currentTarget.id;
     	var seq = stepBody.find( "#".concat( titleid ) ).data().sequence;
-    	
+
     	steps[ seq - 1 ].type = params.newValue;
     }
-    
-    
+
+
     function addRow (e){
     	// event handled, do not propagate to parents
     	e.stopPropagation();
-    	
+
         var newidx = $(this).data().sequence,
         	steps = project.projectsteps,
         	n = steps.length;
-       
+
         newStepId --;
-        
+
         steps.push({
             id: newStepId,
             type: "NEW",
@@ -466,35 +499,35 @@
             sequence: n + 1,
             state: 0
         })
-        
+
         for(var i = n; i > newidx; i--){
         	swap( steps, i - 1, i );
         }
-        
+
         redraw();
     }
-    
+
     function deleteRow (e){
     	// event handled, do not propagate to parents
     	e.stopPropagation();
-    	
+
         var idx = $(this).data().sequence - 1,
         	steps = project.projectsteps,
-        	iscurrent = steps[idx].iscurrent; 
-        
+        	iscurrent = steps[idx].iscurrent;
+
         for(var i = idx + 1; i < steps.length; i++){
         	steps[i-1] = steps[i];
         	steps[i-1].sequence = i;
         }
-        
+
         steps.pop();
         if( idx < steps.length )
         	steps[idx].iscurrent = iscurrent;
-        
+
         redraw();
     }
-    
-    
+
+
     function swap(steps, i, j) {
     	var tmp = steps[i];
     	steps[i] = steps[j];
@@ -505,39 +538,39 @@
     	steps[i].iscurrent = steps[j].iscurrent;
     	steps[j].iscurrent = iscurrentTmp;
     }
-    
-    
+
+
     function upRow(e) {
     	// event handled, do not propagate to parents
     	e.stopPropagation();
-    	
+
         var seq = $(this).data().sequence,
             currentIdx = seq - 1,
             newIdx = currentIdx - 1,
             steps = project.projectsteps;
-        
+
         if (seq != 1 && steps[newIdx].state == 0) {
-        	swap( steps, currentIdx, newIdx );        	
+        	swap( steps, currentIdx, newIdx );
             redraw();
         }
     }
-    
+
     function downRow(e) {
     	// event handled, do not propagate to parents
     	e.stopPropagation();
-    	
+
         var seq   = $(this).data().sequence,
             currentIdx = seq - 1,
-            newIdx = currentIdx + 1,            
+            newIdx = currentIdx + 1,
             steps = project.projectsteps;
 
         if (seq != steps.length) {
-            swap( steps, currentIdx, newIdx);            	
+            swap( steps, currentIdx, newIdx);
             redraw();
         }
     }
-    
-    
+
+
     var successTemplate = '<div class="alert alert-success"><% message %></div>';
     var errorTemplate = '<div class="alert alert-danger"><% message %></div>';
 
@@ -573,7 +606,7 @@
             template.name = name;
             template.templatesteps = template.projectsteps;
             delete template.projectsteps;
-            
+
             $.ajax({
                 url: serverRoot + '/template/create',
                 type: 'POST',
@@ -583,6 +616,6 @@
                 error: saveFailed
             });
         }
-    }  
-    
+    }
+
 }());

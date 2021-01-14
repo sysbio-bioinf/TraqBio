@@ -18,7 +18,7 @@
                 <table id="templates-table" class="table table-hover dt-responsive mytables" width="100%">
                     <thead>
                     <tr>
-                        <th class="all">Template Name</th>                        
+                        <th class="all">Template Name</th>
                         <th class="min-tablet col-md-3">Description</th>
                         <th class="all">Edit</th>
                         <th class="all">Delete</th>
@@ -27,7 +27,7 @@
                     <tbody>
                     {% for templ in templates %}
                     <tr>
-                        <td>{{templ.name}}</td>                        
+                        <td>{{templ.name}}</td>
                         <td>{{templ.description|linebreaks|safe}}</td>
                         <td>
                             <a class="btn btn-default btn-sm" href="{{serverRoot}}/template/edit/{{templ.id}}">

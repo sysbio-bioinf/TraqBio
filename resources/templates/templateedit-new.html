@@ -1,0 +1,102 @@
+{% extends "templates/base.html" %}
+
+{% block header-scripts %}
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/toggle-switch/toggle-switch.css">
+<link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/datatables/css/jquery.dataTables.min.css">
+{% endblock %}
+
+
+{% block nav-templates %}class="active"{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">Customize template</h2>
+            </div>
+            <div class="panel-body">
+                <form id="templateData" class="form-horizontal" role="form" data-toggle="validator">
+                    <div class="form-group">
+                        <label for="templateName" class="col-sm-2 control-label">Template Name</label>
+                        <div class="col-sm-10">
+                            <input type="text"
+                                   class="form-control customize"
+                                   id="templateName"
+                                   data-name="name"
+                                   placeholder="Name"
+                                   required data-error="Please insert template name">
+                            <div class="help-block with-errors"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="templateDescription" class="col-sm-2 control-label">Description</label>
+                        <div class="col-sm-10">
+                            <textarea class="form-control customize textarea" id="templateDescription" data-name="description" placeholder="Description"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">Template steps</h2>
+            </div>
+            <div class="panel-body">
+                <table id="templateStepsTable" class="display vtop" width="100%"></table>
+                <button type="button" class="btn btn-default btn-add-step table-add-button">
+                    <span class="glyphicon glyphicon-plus"></span> Add template step
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">Text modules</h2>
+            </div>
+            <div class="panel-body">
+                <table id="textModulesTable" class="display vtop" width="100%"></table>
+                <button type="button" class="btn btn-default btn-add-module table-add-button">
+                    <span class="glyphicon glyphicon-plus"></span> Add text module
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-group">
+            <button id="updateTemplate" type="button" class="btn btn-success">Update Template</button>
+        </div>
+    </div>
+</div>
+<div id="maxTMid" value="{{ maxTMid }}"></div>
+{% endblock %}
+
+{% block footer-scripts %}
+<script>
+<!--
+var serverRoot = '{{serverRoot}}';
+-->
+</script>
+
+
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/bootstrap/js/validator.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables-bootstrap/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/jquery.serialize-object.min.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/mustache.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/js/templateedit-new.js"></script>
+<script type="text/javascript" language="javascript">
+var initialTemplateData = {{templateData|safe}};
+
+setupDialog( initialTemplateData );
+</script>
+{% endblock %}

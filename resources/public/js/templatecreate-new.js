@@ -147,6 +147,10 @@
             });
     }
 
+    function myjoin_quotes(arr) {
+        return "'" + arr.join("','") + "'";
+    }
+
     function createTemplate($templateNameControl, $templateDescriptionControl, $templateStepsTable, $textModulesTable) {
 
         var formErrors = $('#templateData').validator('validate').find('.has-error');
@@ -156,16 +160,61 @@
             }, 300);
         }
         else{
+            //var $newtemplid = $('#newtemplid').attr('value'); //Contains int that will be used for template id once new template is written by clicking createTemplate button
+            var $maxTMid = parseInt( $('#maxTMid').attr('value') );
+            //^ Obtained from clj in templates.clj template-create
+            
             var templateData = {
                 name: $templateNameControl.val(),
+                id : "", //will be overwritten by clj function
                 description: $templateDescriptionControl.val(),
                 templatesteps: tableData($templateStepsTable),
                 textmodules: $.map( tableData($textModulesTable), function(row) {
                     row.step = parseInt( row.step );
+                    row.id = row.id + $maxTMid; //correctly adds max module id from db, module id thus remains unique -> update succeeds
                     return row;
                 })
             };
 
+            
+            var restrictedWords = new Array(":id", ":template", ":step", ":name", ":text");  //Array will be split wrongly if keywords are present in text or name of modules
+            var NumberOfModules = templateData.textmodules.length;
+            var errorInMod = new Set();
+            var enteredKeywords = new Set();
+            var error = 0; 
+
+            for (mod = 0; mod < NumberOfModules; mod++){//loop over modules
+                
+                templateData.textmodules[mod].id = $maxTMid + mod + 1;
+                
+                var modname = templateData.textmodules[mod].name;
+                var modtext = templateData.textmodules[mod].text; 
+
+                    for (var i = 0; i < restrictedWords.length; i++) {  //check all module names
+                        var val = restrictedWords[i];  
+                        if ((modname.toLowerCase()).indexOf(val.toString()) > -1) {  
+                            error = error + 1;  
+                            enteredKeywords.add(val);
+                            errorInMod.add(mod+1);
+                        }  
+                    }  //end loop over restricted words
+                    for (var i = 0; i < restrictedWords.length; i++) {  //check all module texts
+                        var val = restrictedWords[i];  
+                        if ((modtext.toLowerCase()).indexOf(val.toString()) > -1) {  
+                            error = error + 1;  
+                            enteredKeywords.add(val);
+                            errorInMod.add(mod+1);
+                        }  
+                    }  //end loop over restricted words
+
+            }//end loop over modules
+            var printSet = Array.from(errorInMod).join(', ');
+            var printKeywords = Array.from(enteredKeywords);
+            printKeywords = myjoin_quotes(printKeywords);
+            console.log(templateData.textmodules);
+            
+            if (error == 0){
+            
             $.ajax({
                 url: serverRoot + '/template/create',
                 type: 'POST',
@@ -174,6 +223,12 @@
                 success: onTemplateCreationSucceeded,
                 error: onTemplateCreationFailed
             });
+            
+            } else {
+                var errorStr = 'You have entered some restricted keywords in module(s) ' + printSet + '. These are: ' + printKeywords + '.';
+                alert(errorStr);
+            }
+            
         }
     }
 
@@ -189,6 +244,7 @@
         stepIdCounter = maxId + 1;
 
         $templateStepsTable.clear().rows.add(data.templatesteps).draw();
+        //data.templatesteps contains correct number of steps
 
         var maxModuleId = 0;
         $.each(data.textmodules, function( index, module ) {
@@ -196,6 +252,15 @@
         });
         moduleIdCounter = maxModuleId + 1;
 
+        function sortByKey(array, key) {
+            return array.sort(function(a, b) {
+                var x = a[key]; var y = b[key];
+                return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+            });
+        }
+
+        var tm = data.textmodules;
+        tm = sortByKey(tm, 'step'); //==>NOTE: textmodules are now rendered in order of step, not id once page is refreshed
         $textModulesTable.clear().rows.add(data.textmodules).draw();
 
         stepsChangedHandler($templateStepsTable);
@@ -218,7 +283,7 @@
         var namesToIds = {};
 
         $.each( tableData($templateStepsTable), function(index, row) {
-            namesToIds[ row.type ] = row.id;
+            namesToIds[ row.type ] = index+1; //Used to be row.id
         });
 
         return namesToIds;
@@ -229,6 +294,7 @@
             var option = document.createElement('option');
             option.value = id;
             option.text = name;
+            //correct option enumeration and selected notification
             return option;
         });
     }
@@ -239,7 +305,7 @@
         var selectedId = selectedOption.val();
 
         // delete all except choose step
-        $(dropdown).children('option').slice(2).remove();
+        $(dropdown).children('option').slice(1).remove(); //Needs to be slice(1) instead of 2 to avoid duplication of first step
 
         // add an option for each step name
         $.each( stepNameOptions(stepNamesToIds), function(index, option) {
@@ -254,14 +320,20 @@
     }
 
     function onStepsChanged($textModulesTableDOM, $templateStepsTable) {
-        var stepNamesToIds = getStepNamesToIds($templateStepsTable);
-
+        var stepNamesToIds = getStepNamesToIds($templateStepsTable); //contains correct number of steps
+        //innerHTML of $textModulesTableDOM contains option value=1 TWICE!
         $textModulesTableDOM.find("select").each(function(dontcare, dropdown) {
+            //dropdown gives various select elements, value=1 is present twice here!
             updateDropdown( dropdown, stepNamesToIds );
         });
     }
 
     function renderModuleStep($templateStepsTable, data, type, row, meta) {
+        //NOTE: If all $templateStepsTable are changed to $textModuleTable, first rendering of step1 becomes undefined, only first module has correct step selected, other use opt=-1
+        //templateStepsTable itself is not a table, contain various attributes referring to functions but no specific data about steps or modules
+        //data prints step numbers that modules belong to twice
+        //row prints data about all textmodules twice
+        //console.log(data);
         var $select = $("<select>", {
             "class": "form-control data-input",
             "width": "100%",
@@ -270,13 +342,17 @@
         $select.append( "<option value=\"-1\"" + ( data == -1 ? "selected" : "" ) + ">Choose step</option>" );
         // add current step names
         var options = stepNameOptions( getStepNamesToIds( $templateStepsTable ) );
-        $.each( options, function(index, option) {
+        //options still ok, first step appearing only once
+        $.each( options, function(index, option) {//runs as many times as there are modules in the selected template
+            //index runs from 0 to 7 for 8 step template - correct!
+            //option value correctly goes from 1 to 8
             if( $(option).val() == data ) {
                 $(option).attr('selected', true);
             }
 
             $select.append( $(option).prop("outerHTML") );
         });
+        //console.log($select);
         return $select.prop("outerHTML");
     }
 
@@ -312,12 +388,13 @@
         $table.row( row ).data( rowdata ).draw();
     }
 
-    $(document).ready(function() {
+    $(document).ready(function() {//->initial rendering of the page
+        //var testvar = $('#newtemplid');
         var $templateNameControl = $('#templateName');
         var $templateDescriptionControl = $('#templateDescription');
 
         var $templateStepsTableDOM = $('#templateStepsTable');
-        var $textModulesTableDOM = $('#textModulesTable');
+        var $textModulesTableDOM = $('#textModulesTable'); //here already first step appearing twice!
 
         var stepsChangedHandler = function(templateStepsTable) { onStepsChanged($textModulesTableDOM, templateStepsTable); };
 
@@ -370,6 +447,7 @@
                     type: 'GET',
                     contentType: "application/json; charset=utf-8",
                     success: function (data) {
+                        //initial rendering of selected template modules, double rendering bug is present here
                         onTemplateLoaded($templateNameControl, $templateDescriptionControl, $templateStepsTable, $textModulesTable, stepsChangedHandler, data);
                     }
                 });
@@ -394,5 +472,3 @@
             });
     });
 }());
-
-

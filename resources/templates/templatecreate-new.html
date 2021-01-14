@@ -13,8 +13,10 @@
     <div class="col-md-6">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h2 class="panel-title">Select parent template</h2>
+                <h2 class="panel-title">Select parent template</h2> <!-- Correctly shows variable as read from templates.clj/template-create -->
             </div>
+            <!-- DropDown Menu for template selection -->
+            <div id="maxTMid" value="{{ maxTMid }}"></div>
             <div class="panel-body">
                 <form class="form-horizontal" role="form">
                     <select id="selectTemplate" class="form-control">
@@ -25,6 +27,7 @@
                     </select>
                 </form>
             </div>
+
         </div>
     </div>
 </div>
@@ -63,28 +66,11 @@
     <div class="col-md-12">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h2 class="panel-title">Customize template steps</h2>
+                <h2 class="panel-title">Template steps</h2>
             </div>
             <div class="panel-body">
-                <table id="step-table" class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th
-                                data-toggle="tooltip"
-                                data-placement="right"
-                                title="Type of the project step. For Example sequencing or calculation.">Type</th>
-                            <th
-                                data-toggle="tooltip"
-                                data-placement="top"
-                                title="Detailed description of the project step.">Description</th>
-                            <th>Move</th>
-                            <th>Delete</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-                <button type="button" class="btn btn-default btn-add-row">
+                <table id="templateStepsTable" class="display vtop" width="100%"></table>
+                <button type="button" class="btn btn-default btn-add-step table-add-button">
                     <span class="glyphicon glyphicon-plus"></span> Add template step
                 </button>
             </div>
@@ -93,30 +79,26 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <div class="form-group">
-        	<button id="createTemplate" type="button" class="btn btn-success">Create Template</button>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">Text modules</h2>
+            </div>
+            <div class="panel-body">
+                <table id="textModulesTable" class="display vtop" width="100%"></table>
+                <button type="button" class="btn btn-default btn-add-module table-add-button">
+                    <span class="glyphicon glyphicon-plus"></span> Add text module
+                </button>
+            </div>
         </div>
     </div>
 </div>
-<script id="template_row" type="x-tmpl-mustache">
-<tr>
-    <td><input type="text" class="form-control" data-id="<% id %>" data-name="type" value="<% type %>"></td>
-	<td><textarea rows="1" type="text" class="form-control" data-id="<% id %>" data-name="description"><% description %></textarea></td>
-    <td>
-        <button class="btn btn-default btn-row-up" type="button" data-sequence="<% sequence %>">
-            <span class="glyphicon glyphicon-chevron-up"></span>
-        </button>
-        <button class="btn btn-default btn-row-down" type="button" data-sequence="<% sequence %>">
-            <span class="glyphicon glyphicon-chevron-down"></span>
-        </button>
-    </td>
-    <td>
-        <button class="btn btn-default btn-delete-row" type="button" data-id="<% id %>">
-            <span class="glyphicon glyphicon-trash"></span>
-        </button>
-    </td>
-</tr>
-</script>
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-group">
+            <button id="createTemplate" type="button" class="btn btn-success">Create Template</button>
+        </div>
+    </div>
+</div>
 <div class="modal fade after-creation" tabindex="-1" role="dialog" aria-labelledby="modalSuccessLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -148,5 +130,5 @@ var serverRoot = '{{serverRoot}}';
 <script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables-bootstrap/js/dataTables.bootstrap.min.js"></script>
 <script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/jquery.serialize-object.min.js"></script>
 <script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/mustache.js"></script>
-<script type="text/javascript" language="javascript" src="{{serverRoot}}/js/createTemplate.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/js/templatecreate-new.js"></script>
 {% endblock %}

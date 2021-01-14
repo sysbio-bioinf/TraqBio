@@ -27,7 +27,7 @@
     [clojure.stacktrace :refer [print-cause-trace]]
     [clojure.tools.logging :as log]
     [cemerick.friend :as friend]
-    [ring.util.http-response :as r]    
+    [ring.util.http-response :as r]
     [traqbio.config :as c]
     [traqbio.common :as common]
     [traqbio.db.crud :as crud]
@@ -95,7 +95,7 @@
 
 
 (t/defaction create-project
-  "Creates a tracking number, sends an email to the customer and finally generates the project itsel.  "
+  "Creates a tracking number, sends an email to the customer and finally generates the project itself.  "
   {:description "Project \"{{result.body.projectnumber}}\" created",
    :message project-created-message,
    :error "Project creation failed",
@@ -107,7 +107,7 @@
     (let [trackingNr (-> (UUID/randomUUID) (.toString)),
           projectnumber (if (str/blank? projectnumber) (crud/next-default-projectnumber) projectnumber),
           project (-> project
-                    (set/rename-keys {:templatesteps :projectsteps})                    
+                    (set/rename-keys {:templatesteps :projectsteps})
                     (assoc
                       :dateofreceipt (t/now)
                       :trackingnr trackingNr
@@ -130,7 +130,7 @@
                                    :id project-id
                                    :editlink (render-edit-link project-id)),
                                  (crud/user-email-addresses (:notifiedusers project)),
-                                 :project-creation)))]          
+                                 :project-creation)))]
           {:status 200 ; success, even on mail error since that is handled separately (otherwise the project creation would be reported as failed in the timeline)
            :body {:trackingnr trackingNr, :trackinglink (render-tracking-link trackingNr), :projectnumber projectnumber, :projectid project-id
                   :customerinfos (mapv (fn [{:keys [name, email]}] (format "%s (%s)" name email)) (:customers project))}})))
@@ -200,6 +200,7 @@
                         (remove true?)
                         count),
         changed-step-diff (diff/describe-modifications (diff/step-modifications (:projectsteps new-project), (:projectsteps old-project))),
+        ;TODO: let changed-module-diff call with (diff/module-modifications (:textmodules new-project), (:textmodules old-project))
         diff (cond-> []
                projectnumber-changed?
                (conj (format "Project \"%s\" has been renamed to \"%s\"." (:projectnumber old-project) (:projectnumber new-project)))
@@ -223,7 +224,7 @@
                (or projectnumber-changed? completed? (pos? state-changes))
                  (conj "")
                changed-step-diff
-                 (into changed-step-diff))]
+                 (into changed-step-diff))];end of cond, end of let
    (when (seq diff)
      (str/join "\n" diff))))
 
@@ -308,7 +309,7 @@
 (defn customers-diff
   [new-project, old-project]
   (let [old-customer-map (customer-map old-project),
-        [only-new-customers, only-old-customers] (data/diff (customer-map new-project), old-customer-map)]    
+        [only-new-customers, only-old-customers] (data/diff (customer-map new-project), old-customer-map)]
     (reduce
       (fn [result-map, name+email]
         (if (contains? only-new-customers name+email)
@@ -344,12 +345,13 @@
                        ; remove :notifiedusers since the diff is handled separately
                        (dissoc :notifiedusers)),
         step-changes (diff/step-modifications (:projectsteps new-project), (:projectsteps old-project))
-        notifiedusers-delta (first (data/diff (:notifiedusers new-project) (:notifiedusers old-project))),        
+        ;TODO: let module-changes (diff/module-modifications (:textmodules new-project), (:textmodules old-project))
+        notifiedusers-delta (first (data/diff (:notifiedusers new-project) (:notifiedusers old-project))),
         added-users (user-notification-map->vector 1, notifiedusers-delta),
         removed-users (user-notification-map->vector 0, notifiedusers-delta),
         {:keys [added-customers, removed-customers, modified-customers]} (customers-diff new-project, old-project),
         project-id (:id new-project),
-        steps-completed? (> (completion new-project) (completion old-project))]    
+        steps-completed? (> (completion new-project) (completion old-project))]
     ; update of notified users must be handled here to determine the differences
     (if (and
          (crud/update-project project-diff, step-changes)
@@ -374,7 +376,7 @@
 
 (defn upload
   "File upload. Needs multi-param-file and tracking number"
-  [file nr]  
+  [file nr]
   (if (and file nr)
     (let [tmp-file (:tempfile file)
           new-file-name (create-filename (:filename file) nr)

@@ -62,7 +62,7 @@
       "default")))
 
 (defn- sort-projectsteps
-  "Sorsts the template steps by sequence"
+  "Sorts the template steps by sequence"
   [project]
   (let [steps (:projectsteps project)]
     (assoc project :projectsteps (vec (sort-by :sequence steps)))))
@@ -200,14 +200,28 @@
   (parser/render-file "templates/templatelist.html"
     (add-server-root
       {:request (add-auth-info request)
-       :templates (vec (sort-by :name template-coll))})))
+       :templates (vec (sort-by :name template-coll))}))) ;NOTE: called by routes.clj for create-template, whether key is called :templates or not is irrelevant
 
+;NOTE: New function, analogous to^
+(defn textmodule-list
+ [request, textmodule-coll] ;NOTE: textmodule-coll should come from db/read-text-modules in crud when calling defroute
+ (parser/render-file "templates/projectedit.html"
+   (add-server-root
+     {:request (add-auth-info request)
+      ;:moduletableStr (apply str (vec (sort-by :name textmodule-coll)));(crud/read-all-text-modules)
+      :textmodules (vec (sort-by :name textmodule-coll))})))
 
 (defn template-create
   [request templates]
   (parser/render-file "templates/templatecreate-new.html"
     (add-server-root
       {:request (add-auth-info request)
+       :maxTMid (apply max (mapv #(get % :id) (crud/read-all-text-modules))) ;read textmodule db -> get max of id column
+       ;:newtemplid  (+ (apply max (mapv #(get % :id) (crud/read-templates))) 1) 
+       ;Gets a vector of maps from reading db -> For every map extract the value of the :id key, put in a vector (mapv) -> get max id of existing templates and increment it
+       ;Created div with id= "newtemplid" in templatecreate-new.html to make this variable available to the js file corresponding to this html
+       ;Access it using $('#newtemplid') in js, extract integer saved in .value 
+       ;-> use it to change templateData variable in js -> templateData.textmodules is written to db in bulk using newly defined template id
        :templates templates})))
 
 
@@ -216,7 +230,9 @@
   (parser/render-file "templates/templateedit-new.html"
     (add-server-root
       {:request (add-auth-info request)
-       :templateData (-> template sort-projectsteps json/write-str)})))
+       :maxTMid (apply max (mapv #(get % :id) (crud/read-all-text-modules))) ;read textmodule db -> get max of id column
+       :templateData (-> template sort-projectsteps json/write-str)}))) ;NOTE: This {{templateData|safe}} will yield initialTemplateData
+
 
 
 (defn project-edit-list
@@ -228,12 +244,19 @@
                    #(-> % sort-projectsteps process-project)
                    projects)})))
 
-(defn project-edit
+(defn project-edit ;get access to these keywords in corresponding html/js via this function
   [request project]
   (parser/render-file "templates/projectedit.html"
     (add-server-root
       {:request (add-auth-info request)
        :userlist (mapv :username (filter :email (crud/read-users)))
+       :textmodules (crud/read-text-modules (get project :id))
+       :moduletable (apply str (crud/read-all-text-modules)) ;works, but contains all modules
+       :projtemplid (apply str (crud/get-templatenr-from-projid (get project :id)))
+       ;:moduletableStr (vec (sort-by :name textmodule-coll))
+       ;:reordered (apply str (crud/reorder-module-ids (crud/read-all-text-modules)))
+       ;:reordered (apply str (crud/reorder-module-ids-db))
+       :projectstep (crud/read-projectsteps)
        :project (-> project
                     sort-projectsteps
                     process-project
@@ -274,4 +297,3 @@
                     process-project
                     detect-current-step),
          :upload-path (c/upload-path)}))))
-

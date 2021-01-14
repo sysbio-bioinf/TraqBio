@@ -151,7 +151,11 @@
    (add-notified-user-for-project (c/db-connection), project-id, usernames))
   ([db-conn, project-id, usernames]
    (when (seq usernames)
-     (apply db-insert! db-conn, :usernotification, (mapv #(hash-map :projectid project-id, :username %) usernames)))
+     ;(apply db-insert! db-conn, :usernotification, (mapv #(hash-map :projectid project-id, :username %) usernames)))
+     ;Handle analogously to removal of notified users, loop over all changes -> can add >2 users at the same time now
+     (jdbc/with-db-transaction [t-conn db-conn]
+       (doseq [user usernames]
+         (jdbc/insert! t-conn, :usernotification, {:username user :projectid project-id}))))
    true))
 
 
@@ -171,7 +175,7 @@
   []
   (jdbc/query
     (c/db-connection)
-    ["SELECT * FROM template"]))
+    ["SELECT * FROM template"])) ;NOTE: Called by routes.clj template-api-routes, provides template in { for template in templates }, templates comes from templates.clj template-list function
 
 (defn- read-template-steps
   [template-id]
@@ -181,30 +185,98 @@
       FROM templatestep
       WHERE templatestep.template = ?" template-id]))
 
-
-(defn read-text-modules
-  [template-step-id-list]
+;NOTE: NEED this version of read-textmodules for template-edit html site to render! it is called later by read-template
+;(comment
+(defn read-textmodules
+  [template-step-id-list template-id]
   (into []
     (comp
       (keep
         (fn [step-id]
           (some->> (jdbc/query
                      (c/db-connection)
-                     ["SELECT tm.id, tm.name, tm.text
-                       FROM textmoduletemplatestep AS ms, textmodule AS tm
-                       WHERE ms.templatestepid = ? AND ms.textmoduleid = tm.id"
-                      step-id])
+                      ;["SELECT tm.id, tm.name, tm.text
+                      ; FROM textmoduletemplatestep AS ms, textmodule AS tm
+                      ; WHERE ms.templatestepid = ? AND ms.textmoduleid = tm.id" ;CHANGE, added SELECT tm.template...MATCHING OF ID's is checked here
+                      ;step-id])
+                     ["SELECT * FROM textmodule AS tm
+                        WHERE tm.step = ? AND tm.template = ?";Old version? Read only entries where ... AND tm.template = tempid argument given?
+                       step-id template-id]);end of query
             not-empty
-            (mapv #(assoc % :step step-id)))))
-      cat)
+            (mapv #(assoc % :step step-id)))));end of keep fn
+      cat);end of comp
     template-step-id-list))
+;);end comment
+
+;NOTE: Alternative simpler versions
+(defn read-text-modules
+  "Get all textmodules which belong to the given project."
+  [project-id]
+  (jdbc/query
+    (c/db-connection)
+    ["SELECT * FROM textmodule
+    INNER JOIN project ON textmodule.template=project.template
+    WHERE project.id = ?" project-id])) ;Used in projectedit, needs to be coupled with selmer templates for showing step specific dropdowns
+
+(defn get-templatenr-from-projid
+  [project-id]
+  (jdbc/query
+   (c/db-connection)
+   ["SELECT template FROM project
+    WHERE project.id = ?" project-id])
+  )
+
+(defn reorder-module-ids
+  "Rewrites indices column of textmodule table in order to close gaps, content remains the same."
+  [all-textmodules] ;pass the result of calling read-all-text-modules -> receives multiple maps
+      ;(jdbc/delete! (c/db-connection) :textmodule) ;reset :textmodule db
+      ;(jdbc/insert-multi! (c/db-connection) :textmodule all-textmodules) ;fill db again with reordered id numbers
+  ;
+  ;TODO: Loop assoc-in over all maps in all-textmodules, first 1 is index of user, second is counter
+  ;loop goes from counter = 0 to number of maps
+    (assoc-in [all-textmodules] [1 :id] 1)
+    
+  )
+
+
+(defn read-all-text-modules
+  "Get the entire textmodule database"
+  []
+  (jdbc/query
+   (c/db-connection)
+    ["SELECT * FROM textmodule"]))
+
+(comment ;Used by read-template function. Works to show template-specific modules, but step is taken as templatestep.id
+ (defn read-modules-by-template
+   [tmplId]
+   (jdbc/query
+     (c/db-connection)
+     ["SELECT * FROM textmodule AS tm
+    WHERE tm.template = ?" tmplId])))
+
+
+(defn read-modules-by-template
+  [tmplId]
+  (jdbc/query
+    (c/db-connection)
+    ["SELECT textmodule.id, textmodule.template, textmodule.step, textmodule.name, textmodule.text FROM textmodule
+    WHERE textmodule.template = ?" tmplId]))
+    
+
+
+(defn read-projectsteps
+  "Get all projectsteps"
+  []
+  (jdbc/query
+    (c/db-connection)
+    ["SELECT * FROM projectstep"]))
 
 
 (defn read-template
-  "Returns a template-map with joind templatesteps"
+  "Returns a template-map with joined templatesteps"
   [template-id]
   (when-let [template (jdbc/query
-                        ; cant use a join here, because jdbc/query results in a flat vector and strugles with double keywords
+                        ; cant use a join here, because jdbc/query results in a flat vector and struggles with double keywords
                         (c/db-connection)
                         ["SELECT template.id, template.name, template.description
                           FROM template
@@ -213,7 +285,9 @@
     (let [template-steps (vec (sort-by :sequence (read-template-steps template-id)))]
       (assoc template
         :templatesteps template-steps
-        :textmodules (read-text-modules (mapv :id template-steps))))))
+        ;:textmodules (read-textmodules (mapv :id template-steps) template-id)
+        :textmodules (read-modules-by-template template-id)))))
+        
 
 
 (defn- update-or-insert!
@@ -242,6 +316,11 @@
   [templatestep]
   (select-keys templatestep [:id :type :description :sequence :template]))
 
+;NOTE: New function inserted here. Analogous to normalize-templatestep-data.
+(defn normalize-textmodule-data
+  [module]
+  (select-keys module [:id :template :step :name :text])) ;NOTE: Removed :templatestepid key
+
 
 (defn create-templatestep
   "Inserts or updates a templatestep.
@@ -257,11 +336,19 @@
   [t-conn, {:keys [id] :as step}]
   (jdbc/update! t-conn, :templatestep, (normalize-templatestep-data step), ["id = ?", id]))
 
+;NOTE: New function inserted here.
+(defn update-textmodule
+  [t-conn, {:keys [id] :as module}]
+  (jdbc/update! t-conn, :textmodule, (normalize-textmodule-data module), ["id = ?", id]))
 
 (defn delete-templatestep
   [t-conn, {:keys [id]}]
   (jdbc/delete! t-conn, :templatestep, ["id = ?", id]))
 
+;NOTE: New function inserted here
+(defn delete-textmodule
+  [t-conn, {:keys [id]}]
+  (jdbc/delete! t-conn, :textmodule, ["id = ?", id]))
 
 (defn create-template-steps
   [t-conn, template-id, template-steps]
@@ -273,12 +360,25 @@
       (transient {})
       template-steps)))
 
+(defn delete-all-textmodules-by-template [t-conn, template]
+  ;Use existing t-conn from update-template to jdbc/update! the :textmodule database
+  ;Access textmodule database and delete all rows in which :template key matches provided template argument
+  (jdbc/delete! t-conn :textmodule ["template = ?" template]))
 
+(defn write-all-textmodules-from-templateData [t-conn, textmodules]
+  (jdbc/insert-multi! t-conn :textmodule textmodules))
+
+;Correctly increments id column, rowid doesn't necessarily match id after module deletions
 (defn create-textmodule
   [t-conn, text-module]
   (-> (jdbc/insert! t-conn, :textmodule, (dissoc text-module :id, :step))
     first
     rowid_keyword))
+        ;Analogous to creation of create-templatestep:
+  ;  [t-conn, step]
+  ;  (-> (jdbc/insert! t-conn, :templatestep, (-> step normalize-templatestep-data (dissoc :id)))
+  ;    first
+  ;    rowid_keyword))
 
 
 (defn create-template-module-steps
@@ -307,7 +407,7 @@
   [template]
   (select-keys template [:id :name :description]))
 
-
+(comment ;Doesn't write textmodules to db
 (defn create-template
   "Inserts or updates a template.
   template must only contain :id :name :description :advisor :customeremail :customername :flowcellnr :templatesteps.
@@ -327,19 +427,128 @@
           module-db-id->step-db-id (common/replace-map-vals module-db-id->step-id step-id->db-id)]
       (assign-text-modules-to-template-steps t-conn, module-db-id->step-db-id)
       true)))
+)
 
+;NOTE: Also writes modules which were added in createTemplate to db with template nr matching the ever increasing rowid_keyword
+(defn create-template
+  "Inserts or updates a template.
+  template must only contain :id :name :description :advisor :customeremail :customername :flowcellnr :templatesteps.
+  :templatesteps is a list of templatestep maps. put-TemplateStep is called for every templatestep"
+  [templateData {:keys [templatesteps, textmodules] :as template}]
+  (jdbc/with-db-transaction [t-conn (c/db-connection)]
+    (let [template (-> template normalize-template-data (dissoc :id))
+          template-id (->> template
+                           (jdbc/insert! t-conn, :template)
+                           first
+                        ; the project id (PRIMARY KEY AUTOINCREMENT) is an alias for the rowid in SQLite, hence it contains
+                           rowid_keyword)
+          ; insert template steps
+          step-id->db-id (create-template-steps t-conn, template-id, templatesteps)
+          ; insert text modules - get templateData from actions/templates.clj which gets it from js -> modify template number to match template-id/rowid
+          templateData (assoc templateData :id template-id)
+          templateDataTMs (mapv #(assoc % :template template-id) (get templateData :textmodules))
+          templateData (assoc templateData :textmodules templateDataTMs) ;both id and template in tms are correctly matching template-id now!
+          write-tm-batch (write-all-textmodules-from-templateData t-conn, (get templateData :textmodules))
+          ];end of let
+      ;Works as intended, but js also needs max already present textmodule id
+      true)))
+
+
+
+(comment ;NOTE: old, works, but does not change textmodule table in db
+ (defn update-template
+   [{:keys [id], :as template-diff}, {:keys [added, modified, deleted] :as step-changes}]
+   (jdbc/with-db-transaction [t-conn (c/db-connection)]
+     (jdbc/update! t-conn :template (normalize-template-data template-diff) ["id = ?" id])
+     (doseq [added-step added]
+       (create-templatestep t-conn, (assoc added-step :template id)))
+     (doseq [modified-step modified]
+       (update-templatestep t-conn, modified-step))
+     (doseq [deleted-step deleted]
+       (delete-templatestep t-conn, deleted-step)))
+
+   true))
+;end comment
+
+(comment ;NOTE: This function actually made changes to textmodule db, but wrote only first two columns
+ (defn update-template
+   [{:keys [id], :as template-diff},
+    {:keys [added, modified, deleted] :as step-changes}, {:keys [addedmod, modifiedmod, deletedmod] :as module-changes}] ;new :keys for modules added
+   (do
+    (jdbc/with-db-transaction [t-conn (c/db-connection)]
+      (jdbc/update! t-conn :template (normalize-template-data template-diff) ["id = ?" id])
+      (doseq [added-step added]
+        (create-templatestep t-conn, (assoc added-step :template id)))
+      (doseq [modified-step modified]
+        (update-templatestep t-conn, modified-step))
+      (doseq [deleted-step deleted]
+        (delete-templatestep t-conn, deleted-step))
+;     Added more doseqs for create-module, update-module and delete-module -> change textmodule table in database
+     (doseq [added-module addedmod]
+       (create-textmodule t-conn, (assoc added-module :template id)))
+     (doseq [modified-module modifiedmod]
+       (update-textmodule t-conn, modified-module))
+     (doseq [deleted-module deletedmod]
+       (delete-textmodule t-conn, deleted-module)))
+     ;end of db-transaction
+    true)))
+   ;end comment
+
+(defn reorder-module-ids-db
+  [t-conn]
+  
+  
+  ;(jdbc/update!
+  ; t-conn :textmodule {:step 1} ["ceil(step) = step"];(range 1 13)
+   ;ALTER TABLE textmodule AUTO_INCREMENT = 1 ;To reset autoincrement counter to 1
+   ;TEST: ["UPDATE textmodule SET id INTEGER PRIMARY KEY AUTOINCREMENT"]
+   ;["SET @row := 0; UPDATE textmodule SET id = (@row := @row + 1)"]
+  ; )
+  
+  (jdbc/execute! t-conn ;["UPDATE textmodule SET step INTEGER PRIMARY KEY AUTOINCREMENT"]
+                 ["ALTER TABLE textmodule AUTO_INCREMENT = 300"]
+                 )
+  
+  ;drop id column from textmodule table, re-add it as :id "INTEGER PRIMARY KEY AUTOINCREMENT"?
+      ;ALTER TABLE `textmodule `DROP `id `;
+      ;ALTER TABLE `textmodule `AUTO_INCREMENT = 1;
+      ;ALTER TABLE `textmodule `ADD `id `int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST;
+  
+  ;CREATE SEQUENCE seq_id
+  ;MINVALUE 1
+  ;START WITH 1
+  ;INCREMENT BY 1
+  ;CACHE 10; 
+  ;INSERT INTO textmodule (id)
+  ;VALUES (seq_id.nextval); 
+  
+  ;"INTEGER PRIMARY KEY AUTOINCREMENT"  ; id is already made unique in table definition, need to only reset autoincrement?
+  
+  )
 
 (defn update-template
-  [{:keys [id], :as template-diff}, {:keys [added, modified, deleted] :as step-changes}]
-  (jdbc/with-db-transaction [t-conn (c/db-connection)]
-    (jdbc/update! t-conn :template (normalize-template-data template-diff) ["id = ?" id])
-    (doseq [added-step added]
-      (create-templatestep t-conn, (assoc added-step :template id)))
-    (doseq [modified-step modified]
-      (update-templatestep t-conn, modified-step))
-    (doseq [deleted-step deleted]
-      (delete-templatestep t-conn, deleted-step)))
-  true)
+  [{:keys [id], :as template-diff},
+   {:keys [added, modified, deleted] :as step-changes},
+   textmodules] ;textmodules contains entire templateData as given in js, including :textmodules table
+
+  (do
+   (jdbc/with-db-transaction [t-conn (c/db-connection)]
+     (jdbc/update! t-conn :template (normalize-template-data template-diff) ["id = ?" id])
+     (doseq [added-step added]
+       (create-templatestep t-conn, (assoc added-step :template id)))
+     (doseq [modified-step modified]
+       (update-templatestep t-conn, modified-step))
+     (doseq [deleted-step deleted]
+       (delete-templatestep t-conn, deleted-step))
+    
+     (delete-all-textmodules-by-template t-conn, (:id textmodules))
+     (write-all-textmodules-from-templateData t-conn, (get textmodules :textmodules))
+    
+     ;(reorder-module-ids-db t-conn)
+      );end of db-transaction
+   true))
+  
+
 
 
 (defn delete-template
@@ -347,9 +556,9 @@
   [template-id]
   (jdbc/with-db-transaction [t-conn (c/db-connection)]
     (jdbc/delete! t-conn, :template ["id = ?" template-id])
-    (jdbc/delete! t-conn, :templatestep ["template = ?" template-id]))
+    (jdbc/delete! t-conn, :templatestep ["template = ?" template-id])
+    (delete-all-textmodules-by-template t-conn, template-id))
   true)
-
 
 (defn delete-project
   "Deletes a project with its projectsteps"
@@ -366,7 +575,7 @@
    (read-project-steps (c/db-connection), project-id))
   ([db-conn, project-id]
    (jdbc/query db-conn,
-     ["SELECT projectstep.id, projectstep.type, projectstep.description, projectstep.freetext, projectstep.timestamp, projectstep.state, projectstep.advisor, projectstep.sequence
+     ["SELECT projectstep.id, projectstep.template, projectstep.type, projectstep.description, projectstep.freetext, projectstep.timestamp, projectstep.state, projectstep.advisor, projectstep.sequence
         FROM projectstep
         WHERE projectstep.project = ?" project-id])))
 
@@ -451,7 +660,7 @@
   ([db-conn, project-id]
    (jdbc/with-db-transaction [t-conn db-conn]
      (when-let [project (jdbc/query t-conn
-                          ; cant use a join here, because jdbc/query results in a flat vector and strugles with double keywords
+                          ; cant use a join here, because jdbc/query results in a flat vector and struggles with double keywords
                           ["SELECT * FROM project WHERE project.id = ?" project-id]
                           {:result-set-fn first})]
        (let [users-to-notify (some-> (notified-users-of-project t-conn, (:id project)) sort (zipmap (repeat 1))),
@@ -481,19 +690,21 @@
 
 (defn normalize-projectstep-data
   [projectstep]
-  (select-keys projectstep [:id :type :description :freetext :timestamp :state :advisor :sequence :project]))
+  (select-keys projectstep [:id :template :type :description :freetext :timestamp :state :advisor :sequence :project]))
 
 
 (defn normalize-project-data
   [project]
   (select-keys project
-    [:id :trackingnr :description :dateofreceipt,
+    [:id :template :trackingnr :description :dateofreceipt,
      :advisor :orderform :flowcellnr :samplesheet :done :projectnumber :notifycustomer]))
 
 
 (defn create-projectstep
   [t-conn, step]
-  (jdbc/insert! t-conn, :projectstep, (-> step normalize-projectstep-data (dissoc :id))))
+  ;(do
+  (jdbc/insert! t-conn, :projectstep, (-> step normalize-projectstep-data (dissoc :id))));end of insert
+  ;);end do
 
 
 (defn update-projectstep
@@ -571,16 +782,16 @@
       true)))
 
 
-(defn create-project
+(defn create-project ;Added :template key to project table
   "Inserts a project into the database and returns the project id. Must contain only:
-  :id :trackingnr :description :dateofreceipt :customeremail :customername :advisor :orderform :flowcellnr :samplesheet :projectsteps :done"
-  [{:keys [id, projectsteps, customers, notifiedusers] :as project}]
+  :id :template :trackingnr :description :dateofreceipt :customeremail :customername :advisor :orderform :flowcellnr :samplesheet :projectsteps :done"
+  [{:keys [id, template, projectsteps, customers, notifiedusers] :as project}]
   (jdbc/with-db-transaction [t-conn (c/db-connection)]
     (let [id (->> project
                normalize-project-data
                (jdbc/insert! t-conn, :project)
                first
-               ; the project id (PRIMARY KEY AUTOINCREMENT) is an alias for the rowid in SQLite, hence it contains 
+               ; the project id (PRIMARY KEY AUTOINCREMENT) is an alias for the rowid in SQLite, hence it contains
                rowid_keyword),
           customer-ids (maybe-add-customers t-conn, customers)]
       ; add customers to project
@@ -589,7 +800,9 @@
       (add-notified-user-for-project t-conn, id, notifiedusers)
       ; store project steps
       (doseq [step projectsteps]
+        ; Write template that project is based on to database :project as well as :projectsteps tables as well
         (create-projectstep t-conn, (assoc step :project id)))
+        
       id)))
 
 

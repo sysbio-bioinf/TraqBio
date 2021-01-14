@@ -56,7 +56,7 @@
 
 (defn create-template-step-table
   "template-step <-n--1-> template
-  :type        = Präparation, Sequencing, Alignment, ...
+  :type        = Preparation, Sequencing, Alignment, ...
   :description = work to do in this step
   :freeText    = further notes
   :sequence    = order of the step in the template
@@ -77,7 +77,7 @@
   :id
   :trackingnr    = ID for the public access and tracking of the project
   :description   = free text field to describe the project
-  :dateofreceipt = timestamp for the acquisition of the project  
+  :dateofreceipt = timestamp for the acquisition of the project
   :additionalnotificationemails = additional e-mail addresses to notify
   :advisor       = employee who has accepted the order
   :orderform     = path to uploaded order form
@@ -87,6 +87,7 @@
   [db-conn, table-set]
   (create-table-if-needed db-conn, table-set, :project
     [[:id "INTEGER PRIMARY KEY AUTOINCREMENT"]
+     [:template "INTEGER"]
      [:projectnumber "TEXT"]
      [:trackingnr "TEXT"]
      [:description "TEXT"]
@@ -134,6 +135,7 @@
   [db-conn, table-set]
   (create-table-if-needed db-conn, table-set, :projectstep
     [[:id "INTEGER PRIMARY KEY AUTOINCREMENT"]
+     [:template "INTEGER"]
      [:type "TEXT"]
      [:description "TEXT"]
      [:freetext "Text"]
@@ -163,31 +165,40 @@
 
 
 (defn create-text-module-table
-  "Creates the table containing predefined text modules for free text of project steps."
+  "Creates the table containing predefined text modules for free text of project steps.
+   Adds a dummy textmodule so that table is not empty when read in by js for editTemplate and createTemplate."
   [db-conn, table-set]
+  
+  (do
   (create-table-if-needed db-conn, table-set, :textmodule
-    [[:id "INTEGER PRIMARY KEY AUTOINCREMENT"]
+    [[:id "INTEGER PRIMARY KEY AUTOINCREMENT"] ;Identifies text module, unique
+     [:template "INTEGER"] ; CHANGES: ADDED NEW COLUMN for assigning to correct template, same as in create-template-step-table
+     [:step "INTEGER"]           ;Copy of :templatestepid column
+     ;[:templatestepid "INTEGER"] ;ADDED: Default selected step in dropdown menu, no separate create-textmodule-templatestep-table necessary
+     ;^both these should be INTEGER NOT NULL, remove null for testing
      [:name "TEXT"]
-     [:text "TEXT"]]))
+     [:text "TEXT"]])
+  (jdbc/insert! (c/db-connection), :textmodule {:template 0 :step 0 :name " " :text " "})
+    
+  );end of do
+  )
 
-
+(comment ;Additional tables are not necessary
 (defn create-textmodule-templatestep-table
   "Creates the table containing predefined text modules for free text of project steps."
   [db-conn, table-set]
   (create-table-if-needed db-conn, table-set, :textmoduletemplatestep
-    [[:templatestepid "INTEGER NOT NULL"]
-     [:textmoduleid "INTEGER NOT NULL"]
+    [[:templatestepid "INTEGER NOT NULL"] ;Default selected step in dropdown menu
+     [:textmoduleid "INTEGER NOT NULL"]   ;Identifies text module in database
      ["PRIMARY KEY (templatestepid, textmoduleid)"]]))
-
-
-(defn create-textmodule-projectstep-table
+(defn create-textmodule-projectstep-table ;2. When a project is created from a template, add the text module association to the DB table `:textmoduleprojectstep`.
   "Creates the table containing predefined text modules for free text of project steps."
   [db-conn, table-set]
   (create-table-if-needed db-conn, table-set, :textmoduleprojectstep
-    [[:projectstepid "INTEGER NOT NULL"]
-     [:textmoduleid "INTEGER NOT NULL"]
+    [[:projectstepid "INTEGER NOT NULL"] ;Identifies project
+     [:textmoduleid "INTEGER NOT NULL"] ;Identifies text module in database
      ["PRIMARY KEY (projectstepid, textmoduleid)"]]))
-
+);end of comment
 
 (defn create-password-reset-table
   "Creates the table for password resets."
@@ -230,12 +241,14 @@
     (create-password-reset-table db-conn, table-set)
     (create-user-notification-table db-conn, table-set)
     (create-text-module-table db-conn, table-set)
-    (create-textmodule-templatestep-table db-conn, table-set)
-    (create-textmodule-projectstep-table db-conn, table-set)))
+    ;(create-textmodule-templatestep-table db-conn, table-set)
+    ;(create-textmodule-projectstep-table db-conn, table-set)
+    ))
+
 
 
 (defn create-database-if-needed
-  "Creates the database file if it does not exists. Returns true if the database had to be created and fals otherwise."
+  "Creates the database file if it does not exist. Returns true if the database had to be created and false otherwise."
   [db-filename]
   (if (.exists (io/file db-filename))
     false

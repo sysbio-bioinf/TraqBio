@@ -80,15 +80,15 @@
    ["-d" "--data-base-name NAME" "Name of the database. TraqBio will not override a existing database file."
     :default "traqbio.db"]
    ["-t" "--template-file NAME" "Path to file with a initial set of templates."]
-   ["-h" "--help"]
-   ])
+   ["-h" "--help"]])
+
 
 (def run-options
   [
    ["-c" "--config-file FILENAME" "Path to the config file"
     :default "traqbio.conf"]
-   ["-h" "--help"]
-   ])
+   ["-h" "--help"]])
+
 
 (def app-options [])
 

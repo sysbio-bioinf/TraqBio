@@ -15,10 +15,10 @@
         }
 
         var templateRow = $('#template_row').html();
-        var customerTemplateRow = $('#customer_template_row').html();        
+        var customerTemplateRow = $('#customer_template_row').html();
         var successTemplate = '<div class="alert alert-success"><% message %></div>';
         var errorTemplate = '<div class="alert alert-danger"><% message %></div>';
-        
+
         var stepIdCounter = 0;
         var template = null;
 
@@ -27,7 +27,7 @@
         var customerTableBody = $('#customer-notification-table tbody');
         var generalDescription = $('#generalDescription');
 
-        
+
         function creatingFailed(msg) {
             var alert;
             if (msg.hasOwnProperty("responseJSON"))  {
@@ -61,7 +61,7 @@
             var alert = { message: "Success" };
             var content = $('#after-creation-content');
             content.before(Mustache.render(successTemplate, alert));
-            
+
             var prj = {
             	customerinfos: msg.customerinfos.join("<br>"),
             	'customer': function (x){ return x;},
@@ -69,7 +69,7 @@
                 trackingLink: msg.trackinglink,
                 emailerror: msg.emailerror
             };
-            
+
             content.html(Mustache.render($('#success-message').html(), prj));
 
             uploadOrderForm(msg.trackingnr);
@@ -89,7 +89,7 @@
                 tBody.append(row);
             });
         };
-       
+
 
         function compareSteps(f, s) {
             return (f.sequence < s.sequence) ? -1 : 1;
@@ -155,13 +155,21 @@
             }
         }
 
-        
+
         var templateLoaded = function(loadedtemplate) {
-        	template =loadedtemplate;
-            
+        	template = loadedtemplate;
+          template.template = template.id;
+          //template.template = 1234; //NOTE: this is visible in "template" object as general attribute! -> Associate it with each templatesteps.template
+          steps = template.templatesteps;
+          //Add template association to every step
+          for (var i = 0; i <  steps.length; i++) {
+                  steps[i].template = template.id; //NOTE: Correctly shows template attribute of every step as given template.template!
+          }
+
+
             if( !('notifiedusers' in template) )
             	template.notifiedusers = {};
-            
+
             generalDescription.find('.customize').each(
             		function(){
             			var name = $(this).data().name;
@@ -183,40 +191,41 @@
                             }
             			}
             			});
-            
-            
+
+
             var customerCount = $( customerTableBody ).find("tr").length;
             template.customers = new Array( customerCount );
-            
+
             // preserve already entered customer data
             customerTableBody.find('.customer-data').each(
             		function(){
             			var data = $(this).data();
-            			
-            			if( !(data.index in template.customers) ) 
+
+            			if( !(data.index in template.customers) )
             				template.customers[data.index] = {};
-            			
+
             			var customerData = template.customers[data.index];
             			customerData[data.name] = $(this).val();
             		});
-            
+
             tBody.empty();
 
             redraw();
             //renderProjectSteps(tBody, template);
-            
+
 
             $('.btn-add-row').off('click').on('click', addRow);
             generalDescription.find('.customize').on('change', bodyDataBinding);
             bindHandler();
-            $('#addCustomerRow').off('click').on('click', function(e) { addCustomerRow({}); });            
-            
+            $('#addCustomerRow').off('click').on('click', function(e) { addCustomerRow({}); });
+
             $('#startProject').off('click').on('click', startProject);
-        };
+        };//end of templateLoaded
 
         $('#selectTemplate').on('change', function(e) {
-            var id = parseInt(e.currentTarget.value , 10);
+            var id = parseInt(e.currentTarget.value , 10); //NOTE: This is correct template value. Write this to templatesteps :template
             if (id > 0) {
+              //Correctly changes id whenever a new template is selected
                 $.ajax({
                     url: serverRoot + '/template/' + id,
                     type: 'GET',
@@ -231,7 +240,7 @@
                 });
             }
         });
-        
+
         function bindHandler() {
             tBody.find('.btn-delete-row').on('click', deleteRow);
             tBody.find('.btn-row-up').on('click', upRow);
@@ -245,7 +254,7 @@
             if (name == 'orderform' || name == 'samplesheet') {
                 value = value.replace(/C:\\fakepath\\/i,'');
             }
-                            
+
             if( name == "usernotification" )
             {
             	var username = $(this).data().username;
@@ -259,13 +268,14 @@
             {
             	template[name] = value;
             }
-        }
+        }//end of bodyDataBinding
 
         function stepDataBinding(e){
             var value = $(this).val(),
                 name  = $(this).data().name,
                 id    = $(this).data().id,
                 steps  = template.templatesteps;
+                //template = $(this).data().template; //NOTE: change ; to , above -> No change in steps
 
             for (var i = 0; i <  steps.length; i++) {
                 if (steps[i].id == id) {
@@ -273,16 +283,16 @@
                 }
             }
         }
-        
-        
+
+
         function customerDataBinding(e){
             var index = $(this).data().index;
             var name = $(this).data().name;
             var value = $(this).val();
-            
+
             template.customers[index][name] = value;
         }
-        
+
         function renderCustomers(customerTableBody, template) {
             $.each(template.customers, function(index, customer){
             	customer.index = index;
@@ -297,7 +307,7 @@
         	customerTableBody.empty();
             renderCustomers(customerTableBody, template);
         }
-        
+
         function redraw() {
             tBody.empty();
             renderProjectSteps(tBody, template);
@@ -323,7 +333,7 @@
             template.templatesteps.push({
                 id: --stepIdCounter,
                 type: "",
-                description:"",
+                description:"", //This is not being written to templatesteps, entries come directly from db?
                 sequence: newSeq
             });
             redraw();
@@ -362,17 +372,17 @@
                 redraw();
             }
         }
-        
+
         function addCustomerRow(customerData) {
             template.customers.push(customerData);
-                        
+
             var formgroup = customerTableBody.closest(".form-group");
         	formgroup.removeClass('has-error');
         	customerTable.find("th").removeClass('has-error');
-        	
+
             redraw();
         }
-        
+
         function deleteCustomerRow(e){
         	var todelete = $(this).data().index;
         	template.customers.splice( todelete, 1 );
@@ -394,11 +404,11 @@
 
         function startProject(e) {
         	$('#generalDescription').find(".has-error").removeClass('has-error');
-        	
+
         	var formgroup = customerTable.closest(".form-group");
-        	var helpblock = formgroup.find('.help-block.with-errors'); 
+        	var helpblock = formgroup.find('.help-block.with-errors');
         	helpblock.empty();
-        	
+
             var formErrors = $('#generalDescription').validator('validate').find('.has-error');
             var customerTableError = $( customerTableBody ).find("tr").length == 0;
             if (formErrors.length > 0) {
@@ -409,10 +419,10 @@
             else if (customerTableError)
             {
             	formgroup.addClass('has-error');
-            	customerTable.find("th").addClass('has-error');                	
-            	                   
+            	customerTable.find("th").addClass('has-error');
+
                 helpblock.append("Please add at least one customer");
-            	
+
             	$('html, body').animate({
                     scrollTop: formgroup.offset().top
                 }, 300);
@@ -430,7 +440,7 @@
                 });
             }
         }
-        
+
         // initialize customer selection dialog
         var customerSelectionTableDom = $('#customer-table');
         var customerSelectionTable = customerSelectionTableDom.DataTable({
@@ -453,10 +463,10 @@
             var customer = customerSelectionTable.row(row).data();
 
             var customerData = {email: customer[1], name: customer[0]}
-            
+
             addCustomerRow( customerData );
             redrawCustomers();
-            
+
             $('.select-customer').modal('toggle');
             $('tr.selected', customerSelectionTableDom).removeClass('selected');
         }
@@ -469,7 +479,7 @@
         $('#btn-select').on('click', function(){
             selectCustomer('.selected');
         });
-        
+
         $('#btn-close').on('click', function(){
         	$('tr.selected', customerSelectionTableDom).removeClass('selected');
         });
@@ -478,7 +488,7 @@
         templateLoaded({
             description:"",
             templatesteps: [],
-        	customers: []
-        });        
+        	  customers: []
+        });
     });
 }());

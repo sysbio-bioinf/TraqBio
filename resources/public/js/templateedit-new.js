@@ -1,8 +1,43 @@
+/*
+        document.addEventListener('input', function (event) {
+            if (event.target.tagName.toLowerCase() !== 'textarea') return;
+            autoExpand(event.target);
+        }, false);
+
+        var autoExpand = function (field) {
+
+            // Reset field height
+            //field.style.height = 'inherit';
+        
+            // Get the computed styles for the element
+            var computed = window.getComputedStyle(field);
+        
+            // Calculate the height
+            var height = parseInt(computed.getPropertyValue('border-top-width'), 10)
+                         + parseInt(computed.getPropertyValue('padding-top'), 10)
+                         + field.scrollHeight
+                         + parseInt(computed.getPropertyValue('padding-bottom'), 10)
+                         + parseInt(computed.getPropertyValue('border-bottom-width'), 10);
+        
+            field.style.height = height + 'px';
+        
+        };
+        //TODO: Need to change autoExpand in order to retain size of textarea once element is defocused/deselected
+        //Always grows even if input is deleting lines!
+        //-> Upon input, get total number of lines, adapt size as e.g. number of lines + 1
+*/
+
+//TODO: function Upon input: Get number of rows of text in all elements of class moduleTextArea -> change attribute "rows" of this element to be nrofrows+1
+//Need listener for input to specific class elements -> check property for all elements of this class
+//document.addEventListener('input', function (event) {
+//    if (event.target.tagName.toLowerCase() !== 'textarea') return;
+//    autoExpand(event.target);
+//}, false);
+
 function setupDialog(initialTemplateData) {
     var stepIdCounter = 0;
     var moduleIdCounter = 0;
     const previousTemplateData = JSON.parse(JSON.stringify(initialTemplateData));
-
 
     function moveButton(direction) {
         $button = $("<button>", {
@@ -83,6 +118,10 @@ function setupDialog(initialTemplateData) {
         $table.row(row).remove().draw();
         stepsChangedHandler( $table );
     }
+    //NOTE: NEW function with only 2 arguments, stepsChangedHandler not necessary as order of textmodules is irrelevant
+    function deleteTextModuleRow($table, row) {
+        $table.row(row).remove().draw();
+    }
 
     function onRowCreated($templateStepsTable, stepsChangedHandler, row, data) {
         $(row).off('change', ".text-input").on('change', ".text-input", function() { templateStepsBinding($templateStepsTable, stepsChangedHandler, $(this), row); });
@@ -148,6 +187,10 @@ function setupDialog(initialTemplateData) {
             });
     }
 
+    function myjoin_quotes(arr) {
+        return "'" + arr.join("','") + "'";
+    }
+
     function updateTemplate($templateNameControl, $templateDescriptionControl, $templateStepsTable, $textModulesTable) {
 
         var formErrors = $('#templateData').validator('validate').find('.has-error');
@@ -157,25 +200,79 @@ function setupDialog(initialTemplateData) {
             }, 300);
         }
         else{
+            var $maxTMid = parseInt( $('#maxTMid').attr('value') );
+            //console.log($maxTMid);
+            var tmcounter = 1;
             var templateData = {
                 name: $templateNameControl.val(),
+                id: initialTemplateData.id, //identify newly added templatesteps as belonging to this specific template
                 description: $templateDescriptionControl.val(),
                 templatesteps: tableData($templateStepsTable),
                 textmodules: $.map( tableData($textModulesTable), function(row) {
+                    //console.log(row);
+                    row.id = tmcounter;
+                    //console.log(row.id);
+                    row.id = row.id + $maxTMid; //Should add max id from modules db so that ids remain unique
+                        //row.id starts at 1 if no previous modules are defined in this template
+                        //If there already are modules in this template, increments from that number -> might yield conflicts when simply adding $maxTMid
+                        //Solution: Since all modules belonging to template are deleted and re-written upon edit
+                        //          Force row.id indexing to ALWAYS start at 1 and add $maxTMid as in template-create -> avoid potential id overlaps
+                    //console.log(row.id);
+                    tmcounter = tmcounter + 1;
                     row.step = parseInt( row.step );
+                    row.template = parseInt( row.template );
                     return row;
+
                 })
+
             };
 
-            console.log( templateData );
+            console.log( templateData ); //Shows templateData as soon as button is clicked
 
-            $.ajax({
-                url: serverRoot + '/template/' + initialTemplateData.id,
-                type: 'PUT',
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify( {template: templateData, oldtemplate: previousTemplateData} ),
-                success: onTemplateEditSucceeded
-            });
+            var restrictedWords = new Array(":id", ":template", ":step", ":name", ":text");  //Array will be split wrongly if keywords are present in text or name of modules
+            var NumberOfModules = templateData.textmodules.length;
+            var errorInMod = new Set();
+            var enteredKeywords = new Set();
+            var error = 0; 
+
+            for (mod = 0; mod < NumberOfModules; mod++){//loop over modules
+                var modname = templateData.textmodules[mod].name;
+                var modtext = templateData.textmodules[mod].text; 
+
+                    for (var i = 0; i < restrictedWords.length; i++) {  //check all module names
+                        var val = restrictedWords[i];  
+                        if ((modname.toLowerCase()).indexOf(val.toString()) > -1) {  
+                            error = error + 1;  
+                            enteredKeywords.add(val);
+                            errorInMod.add(mod+1);
+                        }  
+                    }  //end loop over restricted words
+                    for (var i = 0; i < restrictedWords.length; i++) {  //check all module texts
+                        var val = restrictedWords[i];  
+                        if ((modtext.toLowerCase()).indexOf(val.toString()) > -1) {  
+                            error = error + 1;  
+                            enteredKeywords.add(val);
+                            errorInMod.add(mod+1);
+                        }  
+                    }  //end loop over restricted words
+
+            }//end loop over modules
+            var printSet = Array.from(errorInMod).join(', ');
+            var printKeywords = Array.from(enteredKeywords);
+            printKeywords = myjoin_quotes(printKeywords);
+
+            if (error == 0){
+                $.ajax({
+                    url: serverRoot + '/template/' + initialTemplateData.id,
+                    type: 'PUT',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify( {template: templateData, oldtemplate: previousTemplateData} ),
+                    success: onTemplateEditSucceeded
+                });
+            } else {
+                var errorStr = 'You have entered some restricted keywords in module(s) ' + printSet + '. These are: ' + printKeywords + '.';
+                alert(errorStr);
+            }
         }
     }
 
@@ -184,26 +281,36 @@ function setupDialog(initialTemplateData) {
     }
 
     function onTemplateLoaded($templateNameControl, $templateDescriptionControl, $templateStepsTable, $textModulesTable, stepsChangedHandler, data) {
-        console.log(data);
         $templateNameControl.val( data.name );
         $templateDescriptionControl.val( data.description );
 
         var maxId = 0;
         $.each(data.templatesteps, function( index, step ) {
             maxId = Math.max( step.id, maxId );
+            //console.log(data.templatesteps[index].sequence); //sequences go from 1 to N
             data.templatesteps[index].sequence = -1;
         });
+        //maxId is highest Id in templatestep db belonging to this template
         stepIdCounter = maxId + 1;
-
-        $templateStepsTable.clear().rows.add(data.templatesteps).draw();
+        $templateStepsTable.clear().rows.add(data.templatesteps).draw(); //Needed to render step options in tm dropdown, text and name appears anyway from db
 
         var maxModuleId = 0;
         $.each(data.textmodules, function( index, module ) {
             maxModuleId = Math.max( module.id, maxModuleId );
         });
         moduleIdCounter = maxModuleId + 1;
+       
+        function sortByKey(array, key) {
+            return array.sort(function(a, b) {
+                var x = a[key]; var y = b[key];
+                return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+            });
+        }
 
-        $textModulesTable.clear().rows.add(data.textmodules).draw();
+        var tm = data.textmodules;
+        tm = sortByKey(tm, 'step'); //==>NOTE: textmodules are now rendered in order of step, not id once page is refreshed
+        $textModulesTable.clear().rows.add(data.textmodules).draw(); //Needed to render entire textmodule table
+        
 
         stepsChangedHandler($templateStepsTable);
     }
@@ -218,14 +325,14 @@ function setupDialog(initialTemplateData) {
     function addEmptyModule($textModuleTable) {
         var $data = $textModuleTable.rows().data();
         var rowCount = $data.length;
-        $textModuleTable.rows.add([{id: moduleIdCounter++, step: -1, name: "", text: ""}]).draw();
+        $textModuleTable.rows.add([{id: moduleIdCounter++, template: initialTemplateData.id, step: -1, name: "", text: ""}]).draw();
     }
 
     function getStepNamesToIds($templateStepsTable) {
         var namesToIds = {};
 
         $.each( tableData($templateStepsTable), function(index, row) {
-            namesToIds[ row.type ] = row.id;
+            namesToIds[ row.type ] = index+1; //Used to be = row.id, id not needed here
         });
 
         return namesToIds;
@@ -240,14 +347,18 @@ function setupDialog(initialTemplateData) {
         });
     }
 
+    
     function updateDropdown(dropdown, stepNamesToIds) {
+
         // remember selected option
         var selectedOption = $(dropdown).children('option:selected');
         var selectedId = selectedOption.val();
+        //selectedId contains number of step that should be selected for this module (integer)
 
         // delete all except choose step
-        $(dropdown).children('option').slice(2).remove();
-
+        //$(dropdown).children('option').slice(2).remove(); //Only choose step AND first step (duplicate!) are left if rest of function is commented, should be only choose step!
+        $(dropdown).children('option').slice(1).remove(); //Only choose step left if slice(1) is chosen
+        
         // add an option for each step name
         $.each( stepNameOptions(stepNamesToIds), function(index, option) {
             dropdown.options.add( option );
@@ -258,7 +369,10 @@ function setupDialog(initialTemplateData) {
             if( $(option).val() == selectedId )
                 $(option).prop('selected', true);
         });
-    }
+        
+
+    }//end updateDropdown
+    
 
     function onStepsChanged($textModulesTableDOM, $templateStepsTable) {
         var stepNamesToIds = getStepNamesToIds($templateStepsTable);
@@ -269,23 +383,23 @@ function setupDialog(initialTemplateData) {
     }
 
     function renderModuleStep($templateStepsTable, data, type, row, meta) {
+      //NOTE: This function is called as many times as there are modules once the page is first loaded, called again when step selection is changed which fixes duplication
+      //NOTE: Reads step to choose in dropdown menu from $templateStepsTable, id from textmodule table needs to be associated with templateStepsTable!
         var $select = $("<select>", {
             "class": "form-control data-input",
             "width": "100%",
             "data-attribute": "step"});
-
         $select.append( "<option value=\"-1\"" + ( data == -1 ? "selected" : "" ) + ">Choose step</option>" );
         // add current step names
         var options = stepNameOptions( getStepNamesToIds( $templateStepsTable ) );
         $.each( options, function(index, option) {
-            if( $(option).val() == data ) {
+            if( $(option).val() == data ) { 
                 $(option).attr('selected', true);
             }
-
             $select.append( $(option).prop("outerHTML") );
-        });
+        });//end of .each
         return $select.prop("outerHTML");
-    }
+    }//end renderModuleStep
 
     function renderModuleName(data, type, row, meta) {
         var $input = $("<input>",{
@@ -297,20 +411,30 @@ function setupDialog(initialTemplateData) {
         return $input.prop("outerHTML");
     }
 
+
+function autoSize(ele)
+{
+   ele.style.height = 'auto';
+   var newHeight = (ele.scrollHeight > 32 ? ele.scrollHeight : 32);
+   ele.style.height = newHeight.toString() + 'px';
+}
+
+    //Assigns attributes to textareas inside table with id="textModulesTable"
     function renderModuleText(data, type, row, meta) {
         var $textarea = $("<textarea>", {
             "text": data,
             "type": "text",
-            "class": "form-control data-input",
-             "rows": 1,
+            "class": "form-control data-input moduleTextArea", //added specific new class moduleTextArea
+             "rows": 4, //Used to be 1, can also be used to change size of textarea
              "width": "100%",
+             "height": "auto", //accurately changes size of textarea
              "data-attribute": "text"});
         return $textarea.prop("outerHTML");
     }
 
     function onTextModuleRowCreated($textModulesTable, row, data) {
         $(row).off('change', ".data-input").on('change', ".data-input", function() { moduleTextBinding($textModulesTable, $(this), row); });
-        $(row).off('click', '.btn-delete-row').on('click', '.btn-delete-row', function() { deleteRow($textModulesTable, row); });
+        $(row).off('click', '.btn-delete-row').on('click', '.btn-delete-row', function() { deleteTextModuleRow($textModulesTable, row); });
     }
 
     function moduleTextBinding($table, $control, row) {
@@ -327,6 +451,7 @@ function setupDialog(initialTemplateData) {
         var $textModulesTableDOM = $('#textModulesTable');
 
         var stepsChangedHandler = function(templateStepsTable) { onStepsChanged($textModulesTableDOM, templateStepsTable); };
+        //NOTE: This function is called once textmodule delete button has been clicked
 
         var $templateStepsTable = $templateStepsTableDOM.DataTable( {
             ordering: false,
@@ -365,6 +490,7 @@ function setupDialog(initialTemplateData) {
             ]
         } );
 
+
         $('.btn-add-module').off('click').on('click', function(e) { addEmptyModule($textModulesTable); });
 
         onTemplateLoaded($templateNameControl, $templateDescriptionControl, $templateStepsTable, $textModulesTable, stepsChangedHandler, initialTemplateData);
@@ -372,6 +498,7 @@ function setupDialog(initialTemplateData) {
         $('#updateTemplate')
             .off('click').
             on('click', function(e) {
+                console.log("#updateTemplate called from .js");
                 updateTemplate($templateNameControl, $templateDescriptionControl, $templateStepsTable, $textModulesTable);
             });
     });

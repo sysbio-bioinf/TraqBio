@@ -36,8 +36,19 @@
     (neg? id-2) -1,
     :else (- id-1 id-2)))
 
+;NOTE: Analogous new function. Should refer to module id, not templatestepid!! --> No longer needed with new blockwise module writing scheme
+(defn compare-modules
+  [{id-1 :id, :as module-1}, {id-2 :id, :as module-2}]
+  (cond
+    ; sort new modules in decreasing order (not too important, but it is consistent)
+    (and (neg? id-1) (neg? id-2)) (- id-2 id-1)
+    ; negative ids represent2  new modules, put to the end)
+    (neg? id-1) 1,
+    (neg? id-2) -1,
+    :else (- id-1 id-2)))
 
-(defn step-modifications
+
+(defn step-modifications ;NOTE: Function is called in project-diff function of project.clj
   [new-steps, old-steps]
   (let [new-steps (mapv db/normalize-projectstep-data (sort compare-steps new-steps)),
         n (count new-steps),
@@ -67,13 +78,56 @@
         (< i n) ; more new steps than old steps => added steps
           (recur n, j, (into added (subvec new-steps i)), modified, deleted)
         (< j m) ; more old steps than new steps => deleted steps
-          (recur i, m, added, modified, (into deleted (subvec old-steps j)))        
+          (recur i, m, added, modified, (into deleted (subvec old-steps j)))
         :else
           {:added added, :deleted deleted, :modifications modified
            :modified (mapv
                        (fn [[new-diff, _, _, old-id]]
                          (assoc new-diff :id old-id))
                        modified)}))))
+
+;(comment
+; ANALOGOUS
+(defn module-modifications
+  [new-modules, old-modules]
+  (let [new-modules (mapv db/normalize-projectstep-data (sort compare-modules new-modules)), ;no need for new func db/normalize-projectmodule-data?
+                        ;db/normalize-projectstep-data: (select-keys projectstep [:id :type :description :freetext :timestamp :state :advisor :sequence :project])
+                        ;     Refers to entire projectstep in accordion each with their own :freetext
+        n (count new-modules),
+        old-modules (mapv db/normalize-projectstep-data (sort compare-modules old-modules)),
+        m (count old-modules)]
+    (loop [i 0, j 0, addedmod [], modifiedmod [], deletedmod []]
+      (cond
+        (and (< i n) (< j m))
+          (let [new (nth new-modules i),
+                new-id (:id new),
+                old (nth old-modules j),
+                old-id (:id old)]
+            (if (= new-id old-id)
+              (recur (inc i), (inc j),
+                addedmod,
+                (cond-> modifiedmod
+                  ; only if something changed
+                  (not= new old)
+                  ; add modification details with id
+                  (conj (conj (vec (data/diff new, old)) old-id))),
+                deletedmod)
+              ; a module was deleted
+              (recur i, (inc j),
+                addedmod,
+                modifiedmod
+                (conj deletedmod old))))
+        (< i n) ; more new modules than old modules => added modules
+          (recur n, j, (into addedmod (subvec new-modules i)), modifiedmod, deletedmod)
+        (< j m) ; more old modules than new modules => deleted modules
+          (recur i, m, addedmod, modifiedmod, (into deletedmod (subvec old-modules j)))
+        :else
+          {:addedmod addedmod, :deletedmod deletedmod, :modifications modifiedmod
+           :modifiedmod (mapv
+                       (fn [[new-diff, _, _, old-id]]
+                         (assoc new-diff :id old-id))
+                       modifiedmod)}))))
+;);end comment
 
 (def ^:private step-attributes
   {:description "Description",
@@ -130,4 +184,4 @@
                 (->> moved-steps
                   (sort-by #(-> % second :sequence))
                   (map describe-move)
-                  (str/join "\n  "))))))) 
+                  (str/join "\n  ")))))))

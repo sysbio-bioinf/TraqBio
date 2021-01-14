@@ -30,7 +30,7 @@
 (def ^:private ^:const project-creation-customer-body
 "Dear {{customername}},
 
-You recieve this e-mail because you have registered a project at the YOUR LAB.
+You receive this e-mail because you have registered a project at the YOUR LAB.
 
 You can track the progress of your samples through the various steps performed via the following link:
 {{trackinglink}}
@@ -109,7 +109,7 @@ Yours sincerely,
                                :proxy-url nil
                                :keystore "keystore.jks"
                                :key-password "password" },
-     
+
      :mail-config {:host-config ^:replace {:host "mail.uni-ulm.de"
                                            :user "jsmith"
                                            :pass "secret"
@@ -122,7 +122,7 @@ Yours sincerely,
                                       :staff
                                       {:subject "Project {{projectnumber}} has been created",
                                        :body project-creation-staff-body}}
-                   
+
                    :project-progress {:customer
                                       {:subject "Progress update of project {{projectnumber}}"
                                        :body project-progress-customer-body}
@@ -153,7 +153,7 @@ Yours sincerely,
 (defn write-config-file
   [filename, options]
   (let [{:keys [config, variables]} (extract-config-file-content (merge @traqbio-config options))]
-    (spit filename      
+    (spit filename
       (->> variables
         (mapv (fn [[var value]] (format "(def %s\n\"%s\")" var value)))
         (str/join "\n\n")
@@ -240,7 +240,7 @@ Yours sincerely,
           (assoc! res-map k
             (cond
               (-> sink-value meta :replace)
-                source-value,              
+                source-value,
               (and (map? sink-value) (map? source-value))
                 (deep-merge sink-value, source-value)
               :else
@@ -271,7 +271,7 @@ Yours sincerely,
 (defn pool
   [spec]
   (let [cpds (doto (ComboPooledDataSource.)
-               (.setDriverClass (:classname spec)) 
+               (.setDriverClass (:classname spec))
                (.setJdbcUrl (str "jdbc:" (:subprotocol spec) ":" (:subname spec)))
                (.setUser (:user spec))
                (.setPassword (:password spec))
@@ -281,7 +281,7 @@ Yours sincerely,
                (.setMaxIdleTime (* 3 60 60))
                ;; only one connection for SQLite
                (.setMinPoolSize 1)
-               (.setMaxPoolSize 1))] 
+               (.setMaxPoolSize 1))]
     {:datasource cpds}))
 
 

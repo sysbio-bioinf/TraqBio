@@ -2,7 +2,6 @@
 
 {% block nav-prj-edit %}class="active"{% endblock %}
 
-
 {% block header-scripts %}
 <link rel="stylesheet" type="text/css" href="{{serverRoot}}/libs/datatables/css/jquery.dataTables.min.css">
 {% endblock %}
@@ -19,17 +18,19 @@
     <div class="project-init" data-name="orderform">{{project.orderform}}</div>
     <div class="project-init" data-name="samplesheet">{{project.samplesheet}}</div>
     <div class="project-init" data-name="notifycustomer">{{project.notifycustomer}}</div>
-    {% for step in project.projectsteps %}
+    {% for step in project.projectsteps %} <!-- NOTE: Loops over cols of projectstep table. No "s"! Where is this table defined as "projectsteps"? -->
     <div class="project-steps-init" data-id="{{ step.id }}" data-sequence="{{ step.sequence }}">
         <div data-name="type">{{ step.type }}</div>
         <div data-name="description">{{ step.description }}</div>
         <div data-name="advisor">{{ step.advisor }}</div>
-        <div data-name="freetext">{{ step.freetext }}</div>
+        <!-- displayed {{ step.freetext }} should change based on selection in dropdown menu -->
+        <div data-name="sequence">{{ step.sequence }}</div> <!-- Newly added line, use for dropdown differentiation? -->
+        <div data-name="freetext">{{ step.freetext }}</div> <!-- data-id=step.id? data-sequence=step.sequence? data-name=freetext -->
         <div data-name="state">{{ step.state }}</div>
         <div data-name="timestamp">{{ step.timestamp }}</div>
         {% if step.isCurrent %}<div data-name="iscurrent">true</div>{% endif %}
     </div>
-    {% endfor %}
+    {% endfor %}<!-- End loop over steps when rendering page first -->
     {% for customer in project.customers %}
     <div class="customers-init" data-sequence="{{ customer.sequence }}">
         <div data-name="name">{{ customer.name }}</div>
@@ -80,7 +81,7 @@
                     <div class="form-group">
                         <label for="customerTable" class="col-sm-2 control-label">Customers</label>
                         <div class="col-sm-10">
-                    		<div class="panel panel-default customerTablePanel" id="customerTable">           
+                    		<div class="panel panel-default customerTablePanel" id="customerTable">
 	                    	<div class="panel-body">
 	    						<table id="customer-notification-table" class="table table-hover customerTable">
 				                    <thead>
@@ -102,7 +103,7 @@
                 				<div class="help-block with-errors"></div>
 	    					</div>
 	    					</div>
-	    				</div>                        
+	    				</div>
                     </div>
                     <div class="form-group">
                         <label for="projectDescription" class="col-sm-2 control-label">Description</label>
@@ -175,19 +176,19 @@
                     <div class="form-group">
                     	<label for="notifiedusers" class="col-sm-2 control-label">Staff Notification</label>
                     	<div class="col-sm-10 container-fluid">
-                    		<div class="panel panel-default">           
+                    		<div class="panel panel-default">
 	                    	<div class="panel-body">
 	    						<div class="row">
 	                				{% for user in userlist %}
 	                				<div class="col-sm-2 col-md-2 col-lg-1">
                     				<label class="checkbox checkbox-inline">
-                    					<input type="checkbox" class="customize" name="{{user}}" data-name="usernotification" data-username="{{user}}" {% ifnotify project user %} checked {% endifnotify %}>{{user}}                    					
+                    					<input type="checkbox" class="customize" name="{{user}}" data-name="usernotification" data-username="{{user}}" {% ifnotify project user %} checked {% endifnotify %}>{{user}}
                     				</label>
                     				</div>
                     				{% endfor %}
 	    						</div>
 							</div>
-							</div>            
+							</div>
                     	</div>
                     </div>
                 </form>
@@ -204,14 +205,14 @@
             <div class="panel-body form-horizontal">
                 <div class="panel-group" id="stepsAccordion">
                 </div>
-                
+
             </div>
         </div>
     </div>
 </div>
 <div class="row">
 	<div class="col-md-12">
-	    <button id="updateProject" type="button" class="btn btn-success">Update Project</button>
+	    <button id="updateProject" type="button" class="btn btn-success">Update Project</button><!-- onclick="fnCheckForRestrictedWords();" -->
     </div>
 </div>
 <div class="row export-template-row">
@@ -238,10 +239,12 @@
         </div>
     </div>
 </div>
+<!-- Javascript for stepsAccordion starts here! -->
 <script id="project_step" type="x-tmpl-mustache">
 <div class="panel panel-default <% panel_state %>" id="step_panel_<% id %>">
     <div class="panel-heading clearfix" data-toggle="collapse" data-target="#step_<% id %>" data-parent="#stepsAccordion">
         <h4 class="panel-title pull-left">
+            <!-- <p><% id %></p> <!-- Correctly prints number of current accordion step -->
 			<%^prevdone %>
 				<div class="btn-toolbar pull-left" role="toolbar">
 					<div class="btn-group">
@@ -250,12 +253,12 @@
 					</button>
 					</div>
 				</div>
-						
+
 				<a id="title_step_<% id %>" data-sequence="<% sequence %>" class="step-title" data-toggle="collapse" data-parent="#stepsAccordion" href="#step_<% id %>">
                 <% name %>
             	</a>
-						
-				        				
+
+
 			<%/prevdone %>
 			<%#prevdone %>
             <a data-toggle="collapse" data-parent="#stepsAccordion" href="#step_<% id %>">
@@ -290,17 +293,41 @@
     <div id="step_<% id %>" class="panel-collapse <% collapse %>">
         <div class="panel-body steps">
             <div class="form-group">
+            <!-- Text boxes for a given step in the project-->
+            <div id="moduletable" value="{{ moduletable }}"></div> <!-- Load entire textmodule db matching this project template into html? -->
+            <div id="projtemplid" value="{{ projtemplid }}"></div>
+
+            <div id="reordered" value="{{ reordered }}">
                 <label for="editDescription" class="col-sm-2 control-label">Description</label>
                 <div class="col-sm-10">
                     <textarea rows="5" class="form-control customizeStep" id="editDescription" data-id="<% id %>" data-name="description"><% description %></textarea>
                 </div>
             </div>
-            <div class="form-group">
+
+
+            <div class="form-group" data-name="sequence">
                 <label for="editFreeText" class="col-sm-2 control-label">Free text</label>
+                <!--  Added new dropdown menu for Freetext box for every step in project -->
                 <div class="col-sm-10">
-                    <textarea rows="10" class="form-control customizeStep" id="editFreeText" data-id="<% id %>" data-name="freetext"><% freetext %></textarea>
+                  
+                  <div class="panel-body" data-name="sequence">
+                      <form class="form-horizontal " role="form">
+
+                          <select style="width:100%;" class="AccStepSelector" id="selectTextModule" data-id="<% id %>" data-sequence="<% sequence %>" class="form-control" data-name="sequence" onchange="ModuleDropdownSelect(this);">
+                               <option value="-1">Choose text module</option>
+
+                                    
+
+                          </select>
+                      </form>
+                    </div>
+
+                    <textarea rows="10" class="form-control customizeStep EditArea" id="editFreeText" data-id="<% id %>" data-sequence="<% sequence %>" data-name="freetext"><% freetext %></textarea>
                 </div>
+
             </div>
+
+
             <div class="form-group">
                 <label for="editStepAdviser" class="col-sm-2 control-label">Step adviser</label>
                 <div class="col-sm-10">
@@ -320,6 +347,7 @@
     </div>
 </div>
 </script>
+<!-- Javascript for stepsAccordion ends here! -->
 <script id="template_row" type="x-tmpl-mustache">
 <tr>
     <td><input type="text" class="form-control" data-id="<% id %>" data-name="type" value="<% type %>"></td>
@@ -411,11 +439,99 @@
 var serverRoot = '{{serverRoot}}';
 -->
 </script>
+
+<script>
+    function myjoin_quotes(arr) {
+        return "'" + arr.join("','") + "'";
+    }
+
+    function fnCheckForRestrictedWords(printerror=false) {  
+                var restrictedWords = new Array(":id", ":template", ":step", ":name", ":text");  //Array will be split wrongly if keywords are present in text or name of modules
+                var NumberOfSteps = document.getElementsByClassName("AccStepSelector").length;
+                var errorInStep = new Set();
+                var enteredKeywords = new Set();
+                var error = 0;  
+                for (seq = 1; seq <= NumberOfSteps; seq++){
+                    var txtInput = $('.EditArea[data-sequence="' + seq + '"]').val();
+                    for (var i = 0; i < restrictedWords.length; i++) {  
+                        var val = restrictedWords[i];  
+                        if ((txtInput.toLowerCase()).indexOf(val.toString()) > -1) {  
+                            error = error + 1;  
+                            enteredKeywords.add(val);
+                            errorInStep.add(id);
+                        }  
+                    }  //end loop over restricted words
+                }//end for loop over steps
+    
+                if (error > 0) {  
+                    var printSet = Array.from(errorInStep).join(', ');
+                    var printKeywords = Array.from(enteredKeywords);
+                    printKeywords = myjoin_quotes(printKeywords);
+                    var errorStr = 'You have entered some restricted keywords in step(s) ' + printSet + '. These are: ' + printKeywords + '.';
+                    
+                    if (printerror==true){
+                        alert(errorStr); //Warning that some keywords have been entered in textmodule freetext boxes of .editArea
+                        //Keywords in description text boxes are not problematic since these are not part of the :textmodule db table
+                    }
+                    //Don't go back to project list, remain inside projectedit, make no modification to db via ajax call
+                    return(false);
+                } 
+                else {  
+                    // updateProject function executes as planned
+                    return(true);
+                }  
+            
+    }
+
+    function ModuleDropdownSelect(sel) {
+        var seq = sel.getAttribute('data-sequence'); //UPDATE: data-id keeps counting for new project, data-sequence always counts 1 to N for steps
+        //id corresponds to projectstep table column id - i.e. enumeration of steps from 1 to N
+        var item = sel.options[sel.selectedIndex];
+        //var text = item.getAttribute('text');
+        var modulemaps = document.getElementById('moduletable').getAttribute('value'); //correctly accesses entire map of modules from clj
+        var selectedModuleId = item.value; //contains id of selected module from textmodule column id
+        var modarray = modulemaps.split(/[{}]/); //yields array with 2*N+1 entries for all N textmodules, saved in positions 1,3,5,...,2*N-1
+            var N = modarray.length; var i;
+            var $projtemplid = $('#projtemplid').attr('value').split(/[ }]/)[1]; //correctly gives out template number to which project belongs, compare this with mod-template
+            for (i = 1; i < N; i=i+2) {//loop correctly gets all individual maps/modules (i.e. content inside {})
+                var module = modarray[i]; //typeof => string
+                var module_id = parseInt(module.split(':id').pop().split(',')[0]);
+                if (module_id == selectedModuleId){
+                    var text = module.split(':text').pop().split(',')[0];
+                    var text = text.substr(2,text.length -3);
+                    //Correctly displays linebreaks
+                    var newline = String.fromCharCode(13, 10);
+                    var text = text.replaceAll('\\n', newline);
+                }
+            } 
+        //document.body.querySelector(".EditArea[data-id=" + CSS.escape(id) + "]").innerHTML = text;
+        $('.EditArea[data-sequence="' + seq + '"]').val(text);
+            //TO TRY:
+            //$('.EditArea[data-id="' + id + '"]').innerText(text);
+        //^ Use this instead of document.body.query... in order to always update text, even after manual changes have been made
+  }
+
+  $("#updateProject").bind("click",function(){//.bind(eventType, handler)
+          var checkpassed = fnCheckForRestrictedWords(printerror=false);
+          if (checkpassed == true){
+                len = project.projectsteps.length;
+                minId = project.projectsteps[0].id;
+                maxId = project.projectsteps[len-1].id;
+                for (dataId = minId; dataId <= maxId; dataId++) {//correctly updates free text for all steps
+                    originaltext = $('.EditArea[data-id="' + dataId + '"]').val();
+                    $('.EditArea[data-id="' + dataId + '"]').val(originaltext).trigger('change');
+                }     
+            }
+});//end of event handler
+
+
+</script>
+
 <script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/bootstrap/js/validator.min.js"></script>
 <script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/datatables-bootstrap/js/dataTables.bootstrap.min.js"></script>
 <script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/jquery.serialize-object.min.js"></script>
 <script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/jquery/mustache.js"></script>
 <script type="text/javascript" language="javascript" src="{{serverRoot}}/libs/bootstrap-editable/js/bootstrap-editable.min.js"></script>
-<script type="text/javascript" language="javascript" src="{{serverRoot}}/js/editProject.js"></script>
+<script type="text/javascript" language="javascript" src="{{serverRoot}}/js/editProject.js"></script> <!-- Should hereby have access to functions defined in js file -->
 {% endblock %}

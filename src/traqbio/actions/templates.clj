@@ -56,14 +56,13 @@
    :error "Failed to create template \"{{parameters.template.name}}\"",
    :action-type :create}
   [template]
-  (if (crud/create-template (add-sequence-to-steps template))
+  (if (crud/create-template template (add-sequence-to-steps template))
     {:status 200}
     {:status 500}))
 
 
 
-
-
+(comment
 (t/defaction update-template
   "Update the data and steps of a template."
   {:description "Template \"{{parameters.data.template.name}}\" updated",
@@ -79,11 +78,37 @@
                         first
                          ; add template id to diff
                         (assoc :id (:id new-template))),
-        step-changes (diff/step-modifications (:templatesteps new-template), (:templatesteps old-template))]
-    ; TODO: determine changes in text modules analoguous to :templatesteps and perform uppdates in crud/update-template
-    (crud/update-template template-diff, step-changes)
-    {:status 200, :body {}}))
+        step-changes (diff/step-modifications (:templatesteps new-template), (:templatesteps old-template)) ;:templatesteps and :textmodules are keys of templateData
+        ;module-changes (diff/module-modifications (:textmodules new-template), (:textmodules old-template))
+        ;TODO: instead of module-changes, write new functions for writing to textmodule db once updateTemplate button is clicked
+        ] ;end of let
 
+    ;(crud/update-template template-diff, step-changes) ;crud function has already been modified accordingly
+    (crud/update-template template-diff, step-changes);, module-changes)
+    {:status 200, :body {}}))
+);end comment
+
+;NOTE: This version of the function writes to textmodule table, including all additions, modifications and deletions
+(t/defaction update-template
+  "Update the data and steps of a template."
+  {:description "Template \"{{parameters.data.template.name}}\" updated",
+  ;:capture (load-project (:id project)),
+  ;:message project-diff,
+  :error "Update of template \"{{parameters.data.template.name}}\" failed",
+  :action-type :update}
+  [{new-template :template, old-template :oldtemplate :as data}]
+  (let [new-template (add-sequence-to-steps new-template)
+        old-template (add-sequence-to-steps old-template)
+        template-diff (-> (data/diff (dissoc new-template :templatesteps) (dissoc old-template :templatesteps))
+                        ; extract modifications of the new template (newest wins with respect to modified properties)
+                          first
+                         ; add template id to diff
+                          (assoc :id (:id new-template))),
+        step-changes (diff/step-modifications (:templatesteps new-template), (:templatesteps old-template)) ;:templatesteps and :textmodules are keys of templateData
+        textmodules (dissoc new-template) ;Passes entire state of templateData at point where button is clicked with vector of maps stored in :textmodules
+        ] ;end of let
+    (crud/update-template template-diff, step-changes, textmodules);This crud function has been modified (passed textmodules arg from js here) to rewrite db table!
+    {:status 200, :body {}}))
 
 (t/defaction delete-template
   "Delete the given template"
