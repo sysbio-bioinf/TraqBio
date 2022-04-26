@@ -224,6 +224,52 @@
     (with-open [tables-resultset (.getTables metadata nil nil "%" nil)]
       (->> tables-resultset jdbc/result-set-seq (mapv (comp keyword :table_name))))))
 
+;; NOTE: Added tables for v1.4.1
+(defn create-dynamic-projectstep-table
+  ; Write state of projectsteps *at the time point of project creation* to a separate table
+  "Creates the table containing steps for projects. Steps can be altered in this table after the creation of a project
+  independent of the state of the basis template that the project was created from."
+  [db-conn, table-set]
+  
+  (do
+  (create-table-if-needed db-conn, table-set, :dynamicprojectstep
+[[:id "INTEGER PRIMARY KEY AUTOINCREMENT"]
+     [:template "INTEGER"] ;NULL in db if not based on a template
+     ; Need to write all 
+     [:type "TEXT"] ; name of the step
+     [:description "TEXT"]
+     [:freetext "Text"]
+     [:timestamp "TEXT"]
+     [:state "INTEGER"]                                     ; 0 = undone <--> 1 = done
+     [:advisor "TEXT"]
+     [:sequence "INTEGER"] ; step number
+     [:project "INTEGER"]] ; References project(id)
+     )
+  (jdbc/insert! (c/db-connection), :dynamicprojectstep {:project 0 :sequence 0 :type " " :description " " :state 0})
+    
+  );end of do
+  )
+
+  (defn create-dynamic-textmodules-table
+  ;TODO: Needs ':template' nr that a project is based on
+  ;*At the time point of project creation* copy all textmodules of the base template and write them to this new table
+  "Creates the table containing textmodules for projects. Textmodules can be altered in this table after the creation of a project
+  independent of the state of the basis template that the project was created from."
+  [db-conn, table-set]
+
+  (do
+  (create-table-if-needed db-conn, table-set, :dynamictextmodules
+    [[:id "INTEGER PRIMARY KEY AUTOINCREMENT"] ;Identifies element, unique
+     [:projectid "INTEGER"] ; Should be linked to 'id' column of 'project' table
+     [:template "INTEGER"]      ;number of base template that project was based on
+     [:step "INTEGER"]         ;stepnr that the module belongs to
+     [:name "TEXT"]        ;name of the module
+     [:text "TEXT"]]       ;free text of the module
+     )
+  (jdbc/insert! (c/db-connection), :dynamictextmodules {:projectid 0 :step 0 :name " " :text " "})
+    
+  );end of do
+  )
 
 (defn create-missing-tables
   "Checks which tables exist and creates the tables that are missing.
@@ -243,6 +289,9 @@
     (create-text-module-table db-conn, table-set)
     ;(create-textmodule-templatestep-table db-conn, table-set)
     ;(create-textmodule-projectstep-table db-conn, table-set)
+
+    ;(create-dynamic-projectstep-table db-conn, table-set)
+    ;(create-dynamic-textmodules-table db-conn, table-set)
     ))
 
 

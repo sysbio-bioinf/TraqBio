@@ -218,6 +218,12 @@
     INNER JOIN project ON textmodule.template=project.template
     WHERE project.id = ?" project-id])) ;Used in projectedit, needs to be coupled with selmer templates for showing step specific dropdowns
 
+;TODO 17.1.22:
+(comment
+(defn read-dynamic-textmodules
+"Get all textmodules which belong to the given project, given their state as it was when the project was created."
+))
+
 (defn get-templatenr-from-projid
   [project-id]
   (jdbc/query
@@ -719,6 +725,19 @@
   [t-conn, {:keys [id] :as step}]
   (jdbc/delete! t-conn, :projectstep, ["id = ?", id]))
 
+
+;TODO 17.1.22: Writing to new dynamic textmodules table upon project-creation button click (todo implement function call upon button click)
+(comment
+(defn update-dynamictextmodules
+  ;TODO: Get the templatenr from dropdown selection in createProject js 
+
+
+  ;read all textmodules from :textmodules that match this template nr == (jdbc/query)
+  ;Save all those textmodules to new database
+  (jdbc/insert-multi! db-spec :dynamictextmodules (jdbc/query db-spec ["SELECT * FROM textmodules WHERE template = ?", templatenr]))
+
+   )
+);end comment
 
 
 (defn read-project-customer-ids
