@@ -202,6 +202,8 @@
 
             function createTemplate(e) {
                 var formErrors = $('#templateData').validator('validate').find('.has-error');
+                console.log("Calling createTemplate function");
+                console.log($('#templateData'));
                 if (formErrors.length > 0) {
                     $('html, body').animate({
                         scrollTop: formErrors[0].offsetTop
@@ -227,6 +229,12 @@
             templateData.find('.customize').on('change', bodyDataBinding);
             bindHandler();
             $('#createTemplate').off('click').on('click', createTemplate);
+            //$('#createTemplate').off('click').on('click', function (e) {
+            //    console.log("#createTemplate called from .js");
+            //    console.log(template.templatesteps);
+
+    
+            //});
         };
 
         $('#selectTemplate').on('change', function(e) {

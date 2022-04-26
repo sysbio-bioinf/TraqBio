@@ -40,6 +40,7 @@ function setupDialog(initialTemplateData) {
     const previousTemplateData = JSON.parse(JSON.stringify(initialTemplateData));
 
     function moveButton(direction) {
+
         $button = $("<button>", {
             class: "btn btn-default btn-row-" + direction,
             type: "button"
@@ -92,7 +93,16 @@ function setupDialog(initialTemplateData) {
         return deleteButton();
     }
 
-    function moveRow($table, stepsChangedHandler, row, direction) {
+    //Helper function for re-rendering the text module table
+    function sortByKeyFunc(array, key){
+        return array.sort(function(a, b) {
+        var x = a[key]; var y = b[key];
+        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+        });
+    
+    };
+
+    function moveRow($table, stepsChangedHandler, row, direction, $textModulesTable) {//passed $table is $templateStepsTable
         var rowCount = $table.data().length;
 
         var tableRow = $table.row(row);
@@ -104,6 +114,46 @@ function setupDialog(initialTemplateData) {
         if( rowIndex == rowCount - 1 && direction == 1)
             return;
 
+        //console.log("moveRow called! rowIndex = " + rowIndex + ", direction = ", direction);
+        //number of row as well as direction of button that was clicked -> modify textmodules accordingly
+        //console.log($textModulesTable.rows().data()); //Has length = nr of text modules
+
+        //Arrays storing ids of modules which need their :step param to be +1 or -1
+        var toIncreaseStep_ids = [];
+        var toDecreaseStep_ids = [];
+
+        for (var i = 0; i < $textModulesTable.rows().data().length; i++) {
+            //Capture all conditions for finding ids of modules that need to be changed, depending on rowIndex and direction of buttonClick
+            if (direction === -1){ //clicked move up
+                if ($textModulesTable.rows().data()[i].step === rowIndex + 1){//Clicked step, needs to be moved up
+                    toDecreaseStep_ids.push($textModulesTable.rows().data()[i].id);
+                } else if ($textModulesTable.rows().data()[i].step === rowIndex){//Step that is being swapped, needs to be moved down
+                    toIncreaseStep_ids.push($textModulesTable.rows().data()[i].id);
+                }
+            } else if (direction === 1){ //clicked move down
+                if ($textModulesTable.rows().data()[i].step === rowIndex + 1){//Clicked step, needs to be moved down
+                    toIncreaseStep_ids.push($textModulesTable.rows().data()[i].id);
+                } else if ($textModulesTable.rows().data()[i].step === rowIndex + 2){//Step that is being swapped, needs to be moved up
+                    toDecreaseStep_ids.push($textModulesTable.rows().data()[i].id);
+                }
+            }
+        }
+
+        //Apply changes to table
+          for (var i = 0; i < $textModulesTable.rows().data().length; i++) { 
+              if (toIncreaseStep_ids.includes($textModulesTable.rows().data()[i].id)){
+                $textModulesTable.rows().data()[i].step = $textModulesTable.rows().data()[i].step + 1;
+            } else if (toDecreaseStep_ids.includes($textModulesTable.rows().data()[i].id)){
+                $textModulesTable.rows().data()[i].step = $textModulesTable.rows().data()[i].step - 1;
+            }
+        }
+
+        var testTable = tableData($textModulesTable).map( item => { return item });
+        console.log("testTable used for re-rendering modules:");
+        var testTable = sortByKeyFunc(testTable, 'step');
+        console.log(testTable);
+        $textModulesTable.clear().rows.add(testTable).draw(); //Needed to re-render entire textmodule table after step order changed -> WORKS!
+
         var rowData = $table.row(rowIndex).data();
         var otherRowData = $table.row(otherRowIndex).data();
 
@@ -114,20 +164,54 @@ function setupDialog(initialTemplateData) {
         stepsChangedHandler( $table );
     }
 
-    function deleteRow($table, stepsChangedHandler, row) {
+    function deleteRow($table, stepsChangedHandler, row, $textModulesTable) {
+        var tableRow = $table.row(row);
+        var rowIndex = tableRow.index() + 1; //Add one so that rowIndex matches 1-indexed step attribute in $textModulesTable
+        //console.log(tableRow);
+        console.log("Triggered deleteRow function for row = " + rowIndex);
+        //console.log($textModulesTable.rows().data());
+
+        console.log("Looping over all text modules in table and printing their step attribute:");
+        for (var i = 0; i < $textModulesTable.rows().data().length; i++) { 
+            //console.log($textModulesTable.rows().data()[i].step);
+
+            var modulestep = $textModulesTable.rows().data()[i].step;
+            // if modulestep < rowIndex -> This module will not be affected by the deletion of the step
+            if (modulestep == rowIndex){
+                // mark the id of this module for deletion
+                $textModulesTable.rows().data()[i].step = -1; //-1 == Choose step, keep module
+            }
+            if (modulestep > rowIndex){
+                // mark the id of this module to have its step attribute decreased by one
+                $textModulesTable.rows().data()[i].step = $textModulesTable.rows().data()[i].step - 1;
+            }
+        }
+
+        console.log("Text module table after modification due to step deletion:");
+        console.log($textModulesTable.rows().data());
+
+        //Re-render the text modules table
+        var testTable = tableData($textModulesTable).map( item => { return item });
+        console.log("testTable used for re-rendering modules:");
+        var testTable = sortByKeyFunc(testTable, 'step');
+        $textModulesTable.clear().rows.add(testTable).draw();
+
+
         $table.row(row).remove().draw();
         stepsChangedHandler( $table );
     }
+
+
     //NOTE: NEW function with only 2 arguments, stepsChangedHandler not necessary as order of textmodules is irrelevant
     function deleteTextModuleRow($table, row) {
         $table.row(row).remove().draw();
     }
 
-    function onRowCreated($templateStepsTable, stepsChangedHandler, row, data) {
+    function onRowCreated($templateStepsTable, stepsChangedHandler, row, data, $textModulesTable) {
         $(row).off('change', ".text-input").on('change', ".text-input", function() { templateStepsBinding($templateStepsTable, stepsChangedHandler, $(this), row); });
-        $(row).off('click', '.btn-row-up').on('click', '.btn-row-up', function() { moveRow($templateStepsTable, stepsChangedHandler, row, -1); });
-        $(row).off('click', '.btn-row-down').on('click', '.btn-row-down', function() { moveRow($templateStepsTable, stepsChangedHandler, row, +1); });
-        $(row).off('click', '.btn-delete-row').on('click', '.btn-delete-row', function() { deleteRow($templateStepsTable, stepsChangedHandler, row); });
+        $(row).off('click', '.btn-row-up').on('click', '.btn-row-up', function() { moveRow($templateStepsTable, stepsChangedHandler, row, -1, $textModulesTable); });
+        $(row).off('click', '.btn-row-down').on('click', '.btn-row-down', function() { moveRow($templateStepsTable, stepsChangedHandler, row, +1, $textModulesTable); });
+        $(row).off('click', '.btn-delete-row').on('click', '.btn-delete-row', function() { deleteRow($templateStepsTable, stepsChangedHandler, row, $textModulesTable); });
     }
 
     function templateStepsBinding($table, stepsChangedHandler, $control, row) {
@@ -227,7 +311,9 @@ function setupDialog(initialTemplateData) {
 
             };
 
-            console.log( templateData ); //Shows templateData as soon as button is clicked
+            //console.log( templateData ); //Shows templateData as soon as update button is clicked
+            console.info( JSON.stringify(templateData) );
+            console.info( JSON.stringify(templateData.textmodules) );
 
             var restrictedWords = new Array(":id", ":template", ":step", ":name", ":text");  //Array will be split wrongly if keywords are present in text or name of modules
             var NumberOfModules = templateData.textmodules.length;
@@ -310,6 +396,8 @@ function setupDialog(initialTemplateData) {
         var tm = data.textmodules;
         tm = sortByKey(tm, 'step'); //==>NOTE: textmodules are now rendered in order of step, not id once page is refreshed
         $textModulesTable.clear().rows.add(data.textmodules).draw(); //Needed to render entire textmodule table
+        console.log("Content and type of data.textmodules that are .drawn when template is first loaded:");
+        console.log(data.textmodules); //Array of four dicts which are sorted by :step key
         
 
         stepsChangedHandler($templateStepsTable);
@@ -349,10 +437,11 @@ function setupDialog(initialTemplateData) {
 
     
     function updateDropdown(dropdown, stepNamesToIds) {
-
+        //console.log("updateDropdown called!");
         // remember selected option
         var selectedOption = $(dropdown).children('option:selected');
         var selectedId = selectedOption.val();
+        //console.log("selectedId = " + selectedId); //prints Ids of steps that modules belong to
         //selectedId contains number of step that should be selected for this module (integer)
 
         // delete all except choose step
@@ -373,8 +462,8 @@ function setupDialog(initialTemplateData) {
 
     }//end updateDropdown
     
-
     function onStepsChanged($textModulesTableDOM, $templateStepsTable) {
+
         var stepNamesToIds = getStepNamesToIds($templateStepsTable);
 
         $textModulesTableDOM.find("select").each(function(dontcare, dropdown) {
@@ -383,13 +472,14 @@ function setupDialog(initialTemplateData) {
     }
 
     function renderModuleStep($templateStepsTable, data, type, row, meta) {
+        // input data is enumeration of selected step in module table
       //NOTE: This function is called as many times as there are modules once the page is first loaded, called again when step selection is changed which fixes duplication
       //NOTE: Reads step to choose in dropdown menu from $templateStepsTable, id from textmodule table needs to be associated with templateStepsTable!
         var $select = $("<select>", {
             "class": "form-control data-input",
             "width": "100%",
             "data-attribute": "step"});
-        $select.append( "<option value=\"-1\"" + ( data == -1 ? "selected" : "" ) + ">Choose step</option>" );
+        $select.append( "<option value=\"-1\"" + ( data == -1 ? "selected" : "" ) + ">Choose step</option>" ); //-1 == Choose step
         // add current step names
         var options = stepNameOptions( getStepNamesToIds( $templateStepsTable ) );
         $.each( options, function(index, option) {
@@ -443,6 +533,11 @@ function autoSize(ele)
         $table.row( row ).data( rowdata ).draw();
     }
 
+    function checkForDuplicates(array) {
+        return new Set(array).size !== array.length
+      }
+      
+
     $(document).ready(function() {
         var $templateNameControl = $('#templateName');
         var $templateDescriptionControl = $('#templateDescription');
@@ -461,7 +556,7 @@ function autoSize(ele)
             bInfo: false,
             language: {"emptyTable": "No template steps defined, yet."},
             data: [],
-            rowCallback: function(row, data) { onRowCreated($templateStepsTable, stepsChangedHandler, row, data); },
+            rowCallback: function(row, data) { onRowCreated($templateStepsTable, stepsChangedHandler, row, data, $textModulesTable); },
             columns: [
                 { title: "Type", data: "type", width: "25%", render: renderType},
                 { title: "Description", data: "description", render: renderDescription},
@@ -499,7 +594,18 @@ function autoSize(ele)
             .off('click').
             on('click', function(e) {
                 console.log("#updateTemplate called from .js");
-                updateTemplate($templateNameControl, $templateDescriptionControl, $templateStepsTable, $textModulesTable);
+                //console.log("Printing $templateStepsTable:");
+                //console.log($templateStepsTable);
+
+                var typevector = tableData($templateStepsTable).map( item => { return item.type });
+                //console.log(typevector); //vector with all template steps Type entries
+                var duplicateCheck = checkForDuplicates(typevector);
+                //console.log(duplicateCheck); //prints Boolean if there was a duplicate or not
+                if (duplicateCheck){
+                    alert("There should not be duplicates in the 'Type' of template steps.");
+                } else {
+                    updateTemplate($templateNameControl, $templateDescriptionControl, $templateStepsTable, $textModulesTable);
+                }
             });
     });
 }

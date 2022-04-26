@@ -388,6 +388,10 @@
         $table.row( row ).data( rowdata ).draw();
     }
 
+    function checkForDuplicates(array) {
+        return new Set(array).size !== array.length
+      }
+
     $(document).ready(function() {//->initial rendering of the page
         //var testvar = $('#newtemplid');
         var $templateNameControl = $('#templateName');
@@ -468,7 +472,16 @@
         $('#createTemplate')
             .off('click').
             on('click', function(e) {
+                console.log("#createTemplate called from .js");
+                var typevector = tableData($templateStepsTable).map( item => { return item.type });
+                console.log(typevector); //vector with all template steps Type entries
+                var duplicateCheck = checkForDuplicates(typevector);
+                console.log(duplicateCheck);
+                if (duplicateCheck){
+                    alert("There should not be duplicates in the 'Type' of template steps.");
+                } else {
                 createTemplate($templateNameControl, $templateDescriptionControl, $templateStepsTable, $textModulesTable);
+                }
             });
     });
 }());

@@ -187,6 +187,7 @@
     }
 
     function createProjectStep(){
+        console.log("Called createProjectStep in editProject.js:");
     	var id    = $(this).data().id;
     	var sequence    = $(this).data().sequence;
     	project.projectsteps.push({id: id, sequence: sequence});
@@ -305,7 +306,39 @@
         }
     }
 
+    function checkForDuplicates(array) {
+        return new Set(array).size !== array.length
+      }
+
+    function tableData($table) {
+        var data = $table.rows().data();
+        var rowCount = data.length;
+        var rowData = [];
+        for(i = 0; i < rowCount; i++) {
+            rowData[i] = data[i];
+        }
+        return rowData;
+    }
+
     function putProject(e) { //NOTE: This function is being called when updateProject button is clicked
+        console.log("Calling putProject from js");
+        console.log(project.projectsteps);
+        console.log(project.projectsteps.length); 
+        var typevector = new Array(project.projectsteps.length);
+        for (let i = 0; i < project.projectsteps.length; i++){
+            typevector[i] = project.projectsteps[i]['type'];
+        }
+        var duplicateCheck = checkForDuplicates(typevector);
+        console.log(duplicateCheck);
+        if (duplicateCheck){
+            // 'type' = name of a project step -> ensures uniqueness of names of all steps
+            alert("There should not be duplicates in the names of template steps. \n \
+            Please change the name of this step before updating the project.");
+        } 
+
+
+
+
         var checkpassed = fnCheckForRestrictedWords(printerror=true);
     	$('#projectData').find(".has-error").removeClass('has-error');
 
@@ -411,6 +444,10 @@
             $('.edit-step-title').show();
         })
         stepBody.find('.edit-step-title').on( 'click', initStepTitleEdit );
+        //console.log("Callind bindHandler: Old value entry in text field is:")
+        //TODO: Print editable-textbox entry here, use this value in updateStepTitle
+            //const val = document.querySelector('input').value;
+
         stepBody.find('.step-title').on('save', updateStepTitle);
         stepBody.find('.step-title').on('hidden', restoreEditButton);
 
@@ -465,24 +502,54 @@
     	// necessary for switching between editing of two step titles
     	restoreEditButton(e);
 
-    	prevTitleEdit = $(this)[0].id;
+        console.log(document.getElementById(e.currentTarget.id));
 
+    	prevTitleEdit = $(this)[0].id;
     	var stepid = $(this).data().stepid;
     	stepBody.find( stepid ).editable('toggle');
         $(this).hide();
     }
 
     function updateStepTitle(e, params){
-    	e.stopPropagation();
-    	var steps = project.projectsteps,
-    		titleid = e.currentTarget.id;
-    	var seq = stepBody.find( "#".concat( titleid ) ).data().sequence;
+        //Get all step titles, only update if new value would not be a duplicate, otherwise give warning
+        var typevector = new Array(project.projectsteps.length);
+        for (let i = 0; i < project.projectsteps.length; i++){
+            typevector[i] = project.projectsteps[i]['type'];
+        }
 
+        e.stopPropagation();
+        var steps = project.projectsteps,
+            titleid = e.currentTarget.id;
+        var seq = stepBody.find( "#".concat( titleid ) ).data().sequence;
+
+        console.log("logs inside updateStepTitle function:");
+        console.log(titleid); //title_step_6
+        //title_step_6 is the id of <a ...>step03</a> -> how to get this value?
+        //Get value inside edit-textbox class object
+        console.log(document.getElementById(titleid)); //contains entire <a ...>NEW TEXT FIELD VALUE </a>
+
+        typevector[seq - 1 ] = params.newValue; //Add new name, then check for duplicate
+        var duplicateCheck = checkForDuplicates(typevector);
+        if (duplicateCheck){
+            alert("There should not be duplicates in the 'Type' of template steps.");
+            //TODO: Trigger same action as if X button had been clicked instead of checkmark
+        } else {
     	steps[ seq - 1 ].type = params.newValue;
+        }//no duplicate, update step title
     }
 
 
     function addRow (e){
+        console.log("Called addRow in editProject.js:");
+        console.log(project);
+        console.log(project.template);
+        //TODO: Only show this alert if project is based on a template
+        //TODO: Check id and associated template number in the "project" database table
+        //var templatenrfromdb = 0; //TODO: Get :template entry associated with ProjNum from :project db table -> if this is not NULL, print the warning
+        var ProjNum = project.projectnumber; //e.g. "P-1"
+        //var $moduletable = $('#moduletable').attr('value'); 
+        //console.log($moduletable);
+        alert("Adding a step to a project based on a template may lead to a mismatch in text modules associated with this template. \nIt is recommended to create a new template with this additional step first to base the project on.");
     	// event handled, do not propagate to parents
     	e.stopPropagation();
 
@@ -508,6 +575,7 @@
     }
 
     function deleteRow (e){
+        console.log("Called deleteRow in editProject.js:");
     	// event handled, do not propagate to parents
     	e.stopPropagation();
 
@@ -541,6 +609,7 @@
 
 
     function upRow(e) {
+        console.log("Called upRow in editProject.js:");
     	// event handled, do not propagate to parents
     	e.stopPropagation();
 
@@ -556,6 +625,7 @@
     }
 
     function downRow(e) {
+        console.log("Called downRow in editProject.js:");
     	// event handled, do not propagate to parents
     	e.stopPropagation();
 
@@ -605,6 +675,7 @@
         	var template = JSON.parse(JSON.stringify(project));
             template.name = name;
             template.templatesteps = template.projectsteps;
+            //TODO: Save default free text that was entered into template
             delete template.projectsteps;
 
             $.ajax({

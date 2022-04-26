@@ -223,6 +223,7 @@
         };//end of templateLoaded
 
         $('#selectTemplate').on('change', function(e) {
+            console.log("Changed selectTemplate dropdown menu!");
             var id = parseInt(e.currentTarget.value , 10); //NOTE: This is correct template value. Write this to templatesteps :template
             if (id > 0) {
               //Correctly changes id whenever a new template is selected
@@ -402,7 +403,35 @@
             }
         }
 
+        function checkForDuplicates(array) {
+            return new Set(array).size !== array.length
+          }
+
+        function tableData($table) {
+            var data = $table.rows().data();
+            var rowCount = data.length;
+            var rowData = [];
+            for(i = 0; i < rowCount; i++) {
+                rowData[i] = data[i];
+            }
+            return rowData;
+        }
+
         function startProject(e) {
+            console.log("Calling startProject from js");
+            console.log(template.templatesteps);
+            console.log(template.templatesteps.length); 
+            var typevector = new Array(template.templatesteps.length);
+            for (let i = 0; i < template.templatesteps.length; i++){
+                typevector[i] = template.templatesteps[i]['type'];
+            }
+                console.log(typevector);
+                var duplicateCheck = checkForDuplicates(typevector);
+                console.log(duplicateCheck);
+                if (duplicateCheck){
+                    alert("There should not be duplicates in the 'Type' of template steps.");
+                } else {
+
         	$('#generalDescription').find(".has-error").removeClass('has-error');
 
         	var formgroup = customerTable.closest(".form-group");
@@ -439,7 +468,8 @@
                     error: creatingFailed
                 });
             }
-        }
+        }//end of else clause, ie no duplicates in type column
+    }
 
         // initialize customer selection dialog
         var customerSelectionTableDom = $('#customer-table');
