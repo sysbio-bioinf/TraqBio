@@ -163,7 +163,27 @@
                     <tbody>
                     </tbody>
                 </table>
-                <button type="button" class="btn btn-default btn-add-row">
+
+
+                <script type="text/javascript">
+                    function reply_click(clicked_id)
+                    {
+                        if (clicked_id == "addprojectstepbutton"){
+                            //Only trigger this if selected option is not -1, i.e. project is based on a template
+                            var sel = document.getElementById('selectTemplate');
+                            var selected = sel.value; //Get value of selected option
+                            console.log("Currently selected option value is " + selected);
+                            if (selected != -1){
+                                alert("Adding a step to a project based on a template may lead to a mismatch in text modules associated with this template. \nIt is recommended to create a new template with this additional step first to base the project on.");
+                            
+                            };
+                            console.log("log: CLICKED A BUTTON.");
+                        };
+                    }
+                  </script>
+
+
+                <button type="button" id="addprojectstepbutton" onClick="reply_click(this.id)" class="btn btn-default btn-add-row">
                     <span class="glyphicon glyphicon-plus"></span> Add project step
                 </button>
             </div>

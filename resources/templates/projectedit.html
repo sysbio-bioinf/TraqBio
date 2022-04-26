@@ -37,7 +37,7 @@
         <div data-name="email">{{ customer.email }}</div>
     </div>
     {% endfor %}
-    {% for user in userlist %}
+    {% for user in userlist %} 
 	<div class="users-init" data-username="{{ user }}">{% ifnotify project user %}1{% else %}0{% endifnotify %}</div>
 	{% endfor %}
 </div>
@@ -248,7 +248,7 @@
 			<%^prevdone %>
 				<div class="btn-toolbar pull-left" role="toolbar">
 					<div class="btn-group">
-					<button type="button" class="btn btn-default btn-xs edit-step-title" id="edit_title-step_<% id %>" data-stepid="#title_step_<% id %>" data-toggle="tooltip" data-placement="top" data-container="#step_panel_<% id %>" title="Modify step name">
+					<button type="button" class="btn btn-default btn-xs edit-step-title" id="edit_title-step_<% id %>" onClick="reply_click(this.id)" data-stepid="#title_step_<% id %>" data-toggle="tooltip" data-placement="top" data-container="#step_panel_<% id %>" title="Modify step name">
   			  			<span class="glyphicon glyphicon-edit"></span>
 					</button>
 					</div>
